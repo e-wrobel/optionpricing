@@ -1,0 +1,22 @@
+// service definition.
+syntax = "proto3";
+option go_package = ".;option";
+
+service OptionPricing {
+  // Method to compute option price
+  rpc ComputePrice (ComputeRequest) returns (UxtSlice) {}
+}
+
+// The request message containing params
+message ComputeRequest {
+  repeated string params = 1;
+}
+
+// The response message containing the greetings
+message UxtSlice {
+  repeated Uxt U = 1;
+}
+
+message Uxt {
+  repeated float Ut = 1;
+}
