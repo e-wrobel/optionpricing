@@ -9,7 +9,7 @@ service OptionPricing {
 
 // The request message containing params
 message ComputeRequest {
-  repeated string params = 1;
+  repeated float params = 1;
 }
 
 // The response message containing the greetings
