@@ -22,9 +22,17 @@ func StartClient() {
 	client := stubs.NewOptionPricingClient(conn)
 
 	ctx := context.Background()
-	incommingRequest := stubs.ComputeRequest{Params: []float32{0.01, 0.02}}
+	incomingRequest := stubs.ComputeRequest{
+		MaxPrice:        2200,
+		Volatility:      0.2,
+		R:               0.03,
+		TMax:            0.9,
+		StrikePrice:     1200,
+		CalculationType: linear,
+		Beta:            0.000001,
+	}
 
-	UxtOut, err := client.ComputePrice(ctx, &incommingRequest)
+	UxtOut, err := client.ComputePrice(ctx, &incomingRequest)
 	if err != nil {
 		fmt.Printf("unable to make Client request: %v", err)
 		os.Exit(1)

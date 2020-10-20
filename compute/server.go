@@ -13,9 +13,10 @@ type optionPricingServer struct{}
 
 func (o *optionPricingServer) ComputePrice(ctx context.Context, input *stubs.ComputeRequest) (*stubs.UxtSlice, error) {
 
-	params := input.Params
-	Uxt := computeMatrix(params...)
-
+	var Uxt [][]float64
+	if input.CalculationType == linear {
+		Uxt = computeLinearBlackScholes(input.MaxPrice, input.Volatility, input.R, input.TMax, input.StrikePrice, input.Beta)
+	}
 	U := FromMatrixToStruct(Uxt)
 
 	return U, nil

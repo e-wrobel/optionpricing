@@ -2,8 +2,14 @@ package compute
 
 import stubs "optionpricing/option"
 
-func FromStructToMatrix(UxtOut *stubs.UxtSlice) [][]float32 {
-	convertedU := make([][]float32, 0)
+const(
+	linear = "Linear"
+	nonlinear = "NonLinear"
+	spatialSteps = 40
+)
+
+func FromStructToMatrix(UxtOut *stubs.UxtSlice) [][]float64 {
+	convertedU := make([][]float64, 0)
 	for _, u := range UxtOut.U {
 		convertedU = append(convertedU, u.Ut)
 	}
@@ -11,7 +17,7 @@ func FromStructToMatrix(UxtOut *stubs.UxtSlice) [][]float32 {
 	return convertedU
 }
 
-func FromMatrixToStruct(Uxt [][]float32) *stubs.UxtSlice {
+func FromMatrixToStruct(Uxt [][]float64) *stubs.UxtSlice {
 	uSlice := make([]*stubs.Uxt, 0)
 
 	for _, u := range Uxt {

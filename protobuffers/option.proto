@@ -9,7 +9,15 @@ service OptionPricing {
 
 // The request message containing params
 message ComputeRequest {
-  repeated float params = 1;
+  double maxPrice = 1;
+  double volatility = 2;
+  double r = 3;
+  double tMax = 4;
+  double strikePrice = 5;
+  string calculationType = 6;
+  double beta = 7;
+
+
 }
 
 // The response message containing the greetings
@@ -18,5 +26,5 @@ message UxtSlice {
 }
 
 message Uxt {
-  repeated float Ut = 1;
+  repeated double Ut = 1;
 }
