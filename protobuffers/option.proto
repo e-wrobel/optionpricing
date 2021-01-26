@@ -16,13 +16,16 @@ message ComputeRequest {
   double strikePrice = 5;
   string calculationType = 6;
   double beta = 7;
-
-
+  double startPrice = 8;
+  int32 maturityTimeDays = 9;
 }
 
 // The response message containing the greetings
 message UxtSlice {
   repeated Uxt U = 1;
+  double CalculatedOptionprice = 2;
+  int32 CalculatedExpirationDays = 3;
+  double CalculatedAssetPrice = 4;
 }
 
 message Uxt {

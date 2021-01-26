@@ -14,10 +14,25 @@ type optionPricingServer struct{}
 func (o *optionPricingServer) ComputePrice(ctx context.Context, input *stubs.ComputeRequest) (*stubs.UxtSlice, error) {
 
 	var Uxt [][]float64
+	var calculatedPrice float64
+	var calculatedDays int32
+	var calculatedAssetPrice float64
+	var err error
+	var U *stubs.UxtSlice
+
 	if input.CalculationType == linear {
-		Uxt = computeLinearBlackScholes(input.MaxPrice, input.Volatility, input.R, input.TMax, input.StrikePrice, input.Beta)
+		Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, err = computeLinearBlackScholes(input.MaxPrice, input.Volatility, input.R, input.TMax, input.StrikePrice, input.Beta, input.StartPrice, input.MaturityTimeDays)
+		if err != nil {
+			return U, fmt.Errorf("error received from computeLinearBlackScholes: %v", err)
+		}
+		U = FromMatrixToStruct(Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice)
+	} else if input.CalculationType == nonlinear {
+		Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, err = computeNonLinearBlackScholes(input.MaxPrice, input.Volatility, input.R, input.TMax, input.StrikePrice, input.Beta, input.StartPrice, input.MaturityTimeDays)
+		if err != nil {
+			return U, fmt.Errorf("error received from computeLinearBlackScholes: %v", err)
+		}
+		U = FromMatrixToStruct(Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice)
 	}
-	U := FromMatrixToStruct(Uxt)
 
 	return U, nil
 }
