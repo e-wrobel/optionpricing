@@ -24,7 +24,7 @@ func StartClient() {
 	client := stubs.NewOptionPricingClient(conn)
 
 	expectedOptionPrice := 120.0
-	leftBeta := 0.0000005
+	leftBeta := -0.00005
 	rightBeta := 0.0095
 	incomingRequest := &stubs.ComputeRequest{
 		MaxPrice:         2350,
