@@ -3,6 +3,7 @@ package compute
 import (
 	"fmt"
 	"math"
+	stubs "optionpricing/option"
 )
 
 func computeLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta, s0 float64, t int32) ([][]float64, float64, int32, float64, error) {
@@ -179,4 +180,46 @@ func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, be
 	}
 
 	return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, nil
+}
+
+func calibrateBetaForNonLinearBs(expectedOptionPrice float64, leftBeta, rightBeta float64, incommingRequest *stubs.ComputeRequest) ([][]float64, float64, int32, float64, float64, error) {
+	var calculatedPrice, calculatedAssetPrice, middleBeta float64
+	var calculatedDays int32
+	var Uxt [][]float64
+	var err error
+	isFound := false
+	i := 0
+
+	for leftBeta <= rightBeta {
+		middleBeta = (leftBeta + rightBeta) / 2
+		incommingRequest.Beta = middleBeta
+		Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, err = computeNonLinearBlackScholes(incommingRequest.MaxPrice,
+			incommingRequest.Volatility, incommingRequest.R, incommingRequest.TMax, incommingRequest.StrikePrice, incommingRequest.Beta,
+			incommingRequest.StartPrice, incommingRequest.MaturityTimeDays)
+		if err != nil {
+			return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, middleBeta, fmt.Errorf("numerical computation error: %v", err)
+		}
+		if int32(calculatedPrice) == int32(expectedOptionPrice) {
+			isFound = true
+			break
+		}
+		if calculatedPrice < expectedOptionPrice {
+			rightBeta = middleBeta
+		} else {
+			leftBeta = middleBeta
+		}
+
+		i++
+
+		if i > numberOfSteps {
+			break
+		}
+	}
+
+	if !isFound {
+		return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, middleBeta, fmt.Errorf("unable to find the right value")
+	}
+
+	fmt.Printf("Number of steps: %v\n", i)
+	return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, middleBeta, nil
 }

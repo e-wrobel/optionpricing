@@ -24,7 +24,7 @@ func StartClient() {
 	client := stubs.NewOptionPricingClient(conn)
 
 	expectedOptionPrice := 120.0
-	leftBeta := -0.00005
+	leftBeta := -0.0005
 	rightBeta := 0.0095
 	incomingRequest := &stubs.ComputeRequest{
 		MaxPrice:         2350,
@@ -84,7 +84,6 @@ func calibrateBetaForOptionPrice(client stubs.OptionPricingClient, expectedOptio
 
 func executeRPC(client stubs.OptionPricingClient, incomingRequest *stubs.ComputeRequest) (float64, int32, float64) {
 	ctx := context.Background()
-
 
 	UxtOut, err := client.ComputePrice(ctx, incomingRequest)
 	if err != nil {
