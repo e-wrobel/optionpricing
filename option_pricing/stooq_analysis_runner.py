@@ -3,7 +3,7 @@ import os
 import configparser
 import argparse
 
-from option_pricing.stooq_trader import Stooq
+from option_pricing.optionlib.stooq_trader import Stooq
 
 PARAMS = 'params'
 DB = 'db'

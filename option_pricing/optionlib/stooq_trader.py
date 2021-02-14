@@ -13,7 +13,7 @@ from scipy.stats import norm
 import seaborn as sns
 from option_pricing.black_scholes_option_pricing import Option
 
-from option_pricing.stooq_trader_base import StooqBase
+from option_pricing.optionlib.stooq_trader_base import StooqBase
 import option_pricing.grpc_option.option_pb2 as message
 
 # Stock:
