@@ -11,13 +11,13 @@ CLEANDB = 'cleandb'
 PLOTDIR = 'plotdir'
 
 FINANCIAL = 'financial'
-r = 'r'
+R = 'r'
 OPTIONS = 'options'
 ASSET = 'asset'
+GRPC = 'grpc'
 
 
 def get_configuration():
-    global db_name, clean_db, plot_dir, r, options, asset, available_options
     parser = argparse.ArgumentParser(description='Configuration file for stooq runner.')
     parser.add_argument('config', metavar='N', type=str,
                         help='config file')
@@ -30,17 +30,18 @@ def get_configuration():
     db_name = config[PARAMS][DB]
     clean_db = config[PARAMS][CLEANDB]
     plot_dir = config[PARAMS][PLOTDIR]
+    grpc_host = config[PARAMS][GRPC]
     # Financial params
-    r = float(config[FINANCIAL][r])
+    r = float(config[FINANCIAL][R])
     options = config[FINANCIAL][OPTIONS].split(",")
     asset = config[FINANCIAL][ASSET]
 
-    return db_name, clean_db, plot_dir, r, options, asset
+    return db_name, clean_db, plot_dir, grpc_host, r, options, asset
 
 
 if __name__ == "__main__":
 
-    db_name, clean_db, plot_dir, r, options, asset = get_configuration()
+    db_name, clean_db, plot_dir, grpc_host, r, options, asset = get_configuration()
     s = None
     available_options = options
 
@@ -60,20 +61,22 @@ if __name__ == "__main__":
             try:
                 s.get_option(option_name=option)
                 available_options.append(option)
-            except:
-                print("Skipping option: {} as it was not found".format(option))
+            except Exception as e:
+                print("Skipping option: {}, exception: {}".format(option, e))
     else:
         s = Stooq(database=db_name)
 
-    options_calcluated = []
+    options_calculated = []
+    options_data = []
     for option in available_options:
         print("Performing calculation for option: {}".format(option))
 
         try:
             option_asset_data_structure, volatility, bs_price, option_price_from_boundary_condition, \
-            option_price_from_the_first_day, K, T, r = s.calculate_option_and_asset_data(option_name=option,
-                                                                                         asset_name=asset,
-                                                                                         r=r)
+            option_price_from_the_first_day, K, T, r, calculated_option_dict = s.calculate_option_and_asset_data(
+                option_name=option,
+                asset_name=asset,
+                r=r)
 
             print("Performing plot for option: {}".format(option))
             s.plot_option_asset(option_name=option,
@@ -85,10 +88,18 @@ if __name__ == "__main__":
                                 K=K,
                                 T=T,
                                 r=r,
-                                plot_directory=plot_dir)
-            options_calcluated.append(option)
+                                plot_directory=plot_dir,
+                                calculated_option_dict=calculated_option_dict)
+            options_calculated.append(option)
+            # Option, BS Analytical Price, S-K, BS Nonlinear numerical price, Beta
+            options_data.append([option, bs_price, option_price_from_boundary_condition, calculated_option_dict["calculated_option_price"], calculated_option_dict["calculated_beta"]])
         except Exception as e:
-            print("Skipping calculation for option: {}, not enough data".format(option))
+            print("Skipping calculation for option: {}, not enough data, exception: {} ".format(option, e))
 
-    print("Finished. Calculations were performed for options: {}".format(','.join(options_calcluated)))
+    if len(options_data) == 0:
+        s.end_connection()
+        exit(0)
+
+    print("Finished. Calculations were performed for options: {}".format(','.join(options_calculated)))
+    s.plot_summary_table(options_data, plot_directory=plot_dir)
     s.end_connection()

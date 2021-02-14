@@ -1,4 +1,7 @@
-import urllib2
+import ssl
+
+ssl._create_default_https_context = ssl._create_unverified_context
+from six.moves.urllib.request import urlopen
 
 import matplotlib
 
@@ -11,6 +14,8 @@ import seaborn as sns
 from option_pricing.black_scholes_option_pricing import Option
 
 from option_pricing.stooq_trader_base import StooqBase
+import option_pricing.grpc_option.option_pb2 as message
+
 # Stock:
 # https://stooq.pl/q/d/l/?s=wig20&i=d
 #
@@ -27,6 +32,7 @@ LOP = 'lop'
 OPTION = 'option'
 ASSET = 'asset'
 DAYS_IN_YEAR = 365
+TABLE_NAME_FILE = 'OPTIONS_SUMMARY'
 
 
 class Stooq(StooqBase):
@@ -39,7 +45,7 @@ class Stooq(StooqBase):
         """
 
         url = "{}={}{}".format(self.baseurl, stock_name, self.endurl)
-        req = urllib2.urlopen(url)
+        req = urlopen(url)
         data = req.readlines()
 
         header, stock_data = self._data_parser(data, asset=stock_name)
@@ -55,7 +61,7 @@ class Stooq(StooqBase):
         """
 
         url = "{}={}{}{}".format(self.baseurl, option_name, '.pl', self.endurl)
-        req = urllib2.urlopen(url)
+        req = urlopen(url)
         data = req.readlines()
 
         if len(data) < 2:
@@ -153,7 +159,7 @@ class Stooq(StooqBase):
         option_asset_data_structure = self._make_option_asset_data_structure(asset_name, option_name)
 
         if len(option_asset_data_structure) < 3:
-            raise Exception("Not enough data for option: {}".format(option))
+            raise Exception("Not enough data for option: {}".format(option_name))
 
         start_date = sorted(option_asset_data_structure)[0]
         end_time = sorted(option_asset_data_structure)[-1]
@@ -168,12 +174,35 @@ class Stooq(StooqBase):
         option_price_from_boundary_condition = max(asset_price_at_strike_date - K, 0)
         option_price_from_the_first_day = float(option_asset_data_structure[start_date][OPTION][OPENNING_PRICE])
 
+        # Add grpc call here
+        request = message.ComputeRequest()
+        request.maxPrice = 2350
+        request.volatility = volatility
+        request.r = r
+        request.tMax = 0.9
+        request.strikePrice = K
+        request.calculationType = 'NonLinear'
+        request.beta = 0.0
+        request.startPrice = stock_price
+        request.expectedPrice = option_price_from_boundary_condition
+        request.maturityTimeDays = T
+
+        out = self.grpc_client.ComputePrice(request=request)
+
+        calculated_option_dict = {
+            "calculated_option_price": out.CalculatedOptionprice,
+            "calculated_expiration_days": out.CalculatedExpirationDays,
+            "calculated_asset_price": out.CalculatedAssetPrice,
+            "calculated_beta": out.CalculatedBeta
+        }
+
         return option_asset_data_structure, volatility, bs_price, option_price_from_boundary_condition, \
-               option_price_from_the_first_day, K, T, r
+               option_price_from_the_first_day, K, T, r, calculated_option_dict
 
     def plot_option_asset(self, option_name, option_asset_data_structure, volatility, bs_price,
                           option_price_from_bondary_condition,
-                          option_price_from_the_first_day, K, T, r, plot_directory):
+                          option_price_from_the_first_day, K, T, r, plot_directory,
+                          calculated_option_dict):
         """
 
         :param option_name:
@@ -185,6 +214,8 @@ class Stooq(StooqBase):
         :param K:
         :param T:
         :param plot_directory:
+        :param calculated_option_dict:
+
         :return:
         """
 
@@ -206,8 +237,12 @@ class Stooq(StooqBase):
                                                      "\nK: {:.2f}, "
                                                      "\nMax(S(t=T) - K, 0): {:.2f}, "
                                                      "\nCalculated B-S price: {:.2f}, "
-                                                     "\nT: {:.0f} days, ".
-                 format(volatility, r, K, option_price_from_bondary_condition, bs_price, T))
+                                                     "\nT: {:.0f} days, "
+                                                     "\nCalculated Non-linear B-S price: {:.2f}, "
+                                                     "\nCalculated beta: {:.8f}".
+                 format(volatility, r, K, option_price_from_bondary_condition, bs_price, T,
+                        calculated_option_dict["calculated_option_price"],
+                        calculated_option_dict["calculated_beta"]))
 
         ax1.plot(dates[0], option_price_from_the_first_day, marker='o', markersize=6, color="red",
                  label='V(t={}): {:.2f}'.format(dates[0], option_price_from_the_first_day))
@@ -240,3 +275,19 @@ class Stooq(StooqBase):
         fig.tight_layout()
 
         plt.savefig("{}/{}.png".format(plot_directory, option_name))
+
+    def plot_summary_table(self, data: list, plot_directory: str):
+        """
+        
+        :param data: List containing data for options
+        :param plot_dir: Filename to save table
+        """
+
+        fig, ax = plt.subplots(1, 1)
+        column_labels = ["Option", "BS Analytical", "S-K", "BS Nonlinear", "Beta|"]
+        ax.axis('tight')
+        ax.axis('off')
+        ax.table(cellText=data, colLabels=column_labels, loc="center")
+
+        plt.savefig("{}/{}.png".format(plot_directory, TABLE_NAME_FILE))
+

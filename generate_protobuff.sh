@@ -17,7 +17,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-protoc.exe  -I=. --python_out=. ./option.proto
+protoc  -I=. --python_out=. ./option.proto
 if [ $? -ne 0 ]; then
   echo "Unable to generate Python stubs. Exiting..."
   exit 1

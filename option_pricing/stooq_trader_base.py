@@ -1,8 +1,11 @@
-import math
 import sqlite3
-
-import matplotlib
 import statistics
+
+import grpc
+import math
+import matplotlib
+
+import option_pricing.grpc_option.option_pb2_grpc as stub
 
 matplotlib.use('Agg')
 from datetime import date
@@ -29,11 +32,13 @@ DAYS_IN_YEAR = 365
 
 class StooqBase(object):
 
-    def __init__(self, database=':memory:'):
+    def __init__(self, database=':memory:', grpc_host='localhost:9000'):
         self.baseurl = 'https://stooq.pl/q/d/l/?s'
         self.endurl = '&i=d'
         self.db_conn = sqlite3.connect(database=database)
         self.db_cursor = self.db_conn.cursor()
+        channel = grpc.insecure_channel(grpc_host)
+        self.grpc_client = stub.OptionPricingStub(channel=channel)
 
     def _create_table(self, table_name):
         """
@@ -75,6 +80,7 @@ class StooqBase(object):
         i = 0
 
         for line in data:
+            line = line.decode("utf-8")
             if i == 0:
                 header = line
                 i += 1
@@ -137,7 +143,7 @@ class StooqBase(object):
         for data in option_data:
             self._fill_data(data, option_asset_data, t=OPTION)
             date = data[1]
-            year = str(date.split("-")[0])
+            year = int(date.split("-")[0])
             option_years[year] = True
         wig_years = ["\'%{}%\'".format(x) for x in option_years.keys()]
 
@@ -248,8 +254,8 @@ class StooqBase(object):
         :return: Date between dates
         """
 
-        current_date = map(lambda x: int(x), current_date.split("-"))
-        expiration_date = map(lambda x: int(x), expiration_date.split("-"))
+        current_date = list(map(lambda x: int(x), current_date.split("-")))
+        expiration_date = list(map(lambda x: int(x), expiration_date.split("-")))
         days_obj = date(expiration_date[0], expiration_date[1], expiration_date[2]) - date(current_date[0],
                                                                                            current_date[1],
                                                                                            current_date[2])

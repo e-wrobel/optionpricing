@@ -182,7 +182,7 @@ func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, be
 	return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, nil
 }
 
-func calibrateBetaForNonLinearBs(expectedOptionPrice float64, leftBeta, rightBeta float64, incommingRequest *stubs.ComputeRequest) ([][]float64, float64, int32, float64, float64, error) {
+func calibrateBetaForNonLinearBs(leftBeta, rightBeta float64, incommingRequest *stubs.ComputeRequest) ([][]float64, float64, int32, float64, float64, error) {
 	var calculatedPrice, calculatedAssetPrice, middleBeta float64
 	var calculatedDays int32
 	var Uxt [][]float64
@@ -199,11 +199,11 @@ func calibrateBetaForNonLinearBs(expectedOptionPrice float64, leftBeta, rightBet
 		if err != nil {
 			return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, middleBeta, fmt.Errorf("numerical computation error: %v", err)
 		}
-		if int32(calculatedPrice) == int32(expectedOptionPrice) {
+		if int32(calculatedPrice) == int32(incommingRequest.ExpectedPrice) {
 			isFound = true
 			break
 		}
-		if calculatedPrice < expectedOptionPrice {
+		if calculatedPrice < incommingRequest.ExpectedPrice {
 			rightBeta = middleBeta
 		} else {
 			leftBeta = middleBeta

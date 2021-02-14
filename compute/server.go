@@ -14,7 +14,7 @@ type optionPricingServer struct{}
 func (o *optionPricingServer) ComputePrice(ctx context.Context, input *stubs.ComputeRequest) (*stubs.UxtSlice, error) {
 
 	var Uxt [][]float64
-	var calculatedPrice float64
+	var calculatedPrice, beta float64
 	var calculatedDays int32
 	var calculatedAssetPrice float64
 	var err error
@@ -25,14 +25,15 @@ func (o *optionPricingServer) ComputePrice(ctx context.Context, input *stubs.Com
 		if err != nil {
 			return U, fmt.Errorf("error received from computeLinearBlackScholes: %v", err)
 		}
-		U = FromMatrixToStruct(Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice)
+		U = FromMatrixToStruct(Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, 0)
 	} else if input.CalculationType == nonlinear {
-		//Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, err = calibrateBetaForNonLinearBs(input.)
-		Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, err = computeNonLinearBlackScholes(input.MaxPrice, input.Volatility, input.R, input.TMax, input.StrikePrice, input.Beta, input.StartPrice, input.MaturityTimeDays)
+		leftBeta := -0.0005
+		rightBeta := 0.0095
+		Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, beta, err = calibrateBetaForNonLinearBs(leftBeta, rightBeta, input)
 		if err != nil {
-			return U, fmt.Errorf("error received from computeLinearBlackScholes: %v", err)
+			return U, fmt.Errorf("error received from calibrateBetaForNonLinearBs: %v", err)
 		}
-		U = FromMatrixToStruct(Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice)
+		U = FromMatrixToStruct(Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, beta)
 	}
 
 	return U, nil
@@ -43,7 +44,7 @@ type optionPricingInterface interface {
 }
 
 func StartServer() {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", 9000))
+	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", 9000))
 	if err != nil {
 		fmt.Printf("failed to listen: %v", err)
 		return

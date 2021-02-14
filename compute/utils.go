@@ -17,7 +17,7 @@ func FromStructToMatrix(UxtOut *stubs.UxtSlice) [][]float64 {
 	return convertedU
 }
 
-func FromMatrixToStruct(Uxt [][]float64, calculatedPrice float64, calculatedDays int32, calculatedAssetPrice float64) *stubs.UxtSlice {
+func FromMatrixToStruct(Uxt [][]float64, calculatedPrice float64, calculatedDays int32, calculatedAssetPrice, calculatedBeta float64) *stubs.UxtSlice {
 	uSlice := make([]*stubs.Uxt, 0)
 
 	for _, u := range Uxt {
@@ -30,6 +30,7 @@ func FromMatrixToStruct(Uxt [][]float64, calculatedPrice float64, calculatedDays
 		CalculatedOptionprice:    calculatedPrice,
 		CalculatedExpirationDays: calculatedDays,
 		CalculatedAssetPrice:     calculatedAssetPrice,
+		CalculatedBeta:           calculatedBeta,
 	}
 
 	return U
