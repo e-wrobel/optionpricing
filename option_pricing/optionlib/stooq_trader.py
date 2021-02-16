@@ -283,9 +283,23 @@ class Stooq(StooqBase):
         :param plot_dir: Filename to save table
         """
 
-        plt.clf()
+        # define figure and axes
+        fig, ax = plt.subplots()
+
+        # hide the axes
+        fig.patch.set_visible(False)
+        ax.axis('off')
+        ax.axis('tight')
+
+        # create data
         column_labels = ["Option", "BS Analytical", "S-K", "BS Nonlinear", "Beta"]
-        table = plt.table(cellText=data, colLabels=column_labels, loc="center", fontsize='xx-large')
-        table.set_fontsize(30)
-        plt.savefig("{}/{}.png".format(plot_directory, TABLE_NAME_FILE))
+
+        # create table
+        table = ax.table(cellText=data, colLabels=column_labels, loc='center', cellLoc='center')
+        table.set_fontsize(14)
+        table.scale(1, 2)
+
+        # display table
+        fig.tight_layout()
+        plt.savefig("{}/{}.png".format(plot_directory, TABLE_NAME_FILE), dpi=600)
 

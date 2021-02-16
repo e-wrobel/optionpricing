@@ -16,6 +16,9 @@ OPTIONS = 'options'
 ASSET = 'asset'
 GRPC = 'grpc'
 
+FLOAT_PRECISION = '{:.3f}'
+BETA_FLOAT_PRECISION = '{:.8f}'
+
 
 def get_configuration():
     parser = argparse.ArgumentParser(description='Configuration file for stooq runner.')
@@ -91,8 +94,12 @@ if __name__ == "__main__":
                                 plot_directory=plot_dir,
                                 calculated_option_dict=calculated_option_dict)
             options_calculated.append(option)
-            # Option, BS Analytical Price, S-K, BS Nonlinear numerical price, Beta
-            options_data.append([option, bs_price, option_price_from_boundary_condition, calculated_option_dict["calculated_option_price"], calculated_option_dict["calculated_beta"]])
+
+            options_data.append([option,
+                                 FLOAT_PRECISION.format(bs_price),
+                                 FLOAT_PRECISION.format(option_price_from_boundary_condition),
+                                 FLOAT_PRECISION.format(calculated_option_dict["calculated_option_price"]),
+                                 BETA_FLOAT_PRECISION.format(calculated_option_dict["calculated_beta"])])
         except Exception as e:
             print("Skipping calculation for option: {}, not enough data, exception: {} ".format(option, e))
 
