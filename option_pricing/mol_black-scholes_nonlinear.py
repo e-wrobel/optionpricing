@@ -30,6 +30,7 @@ class Solver(object):
         """
 
         self.equation_type = linear
+        self.option_type = 'american'
 
         # Option pricing parameters
         self.sigma = np.float64(sigma)
@@ -152,6 +153,88 @@ class Solver(object):
 
         return True
 
+    def pdeSolverAsian(self, equation_type=linear):
+        """
+        Pde solver.
+
+        :type equation_type: Linear on NonLinear
+
+        :return: True or False (in case of computation error)
+        """
+
+        self.equation_type = equation_type
+        self.option_type = 'asian'
+
+        # Set initial condition u(s,t=0) = initialFunction(s)
+        s_sum = 0
+        for s_i in range(self.s_array_size):
+            s_sum = s_sum + self.s[s_i]
+            s_avg = s_sum/(s_i +1)
+            self.U_st[s_i, 0] = max(s_avg - self.k, 0)
+
+        try:
+            # Calculate for t + dt
+            for t_i in range(1, self.t_array_size):
+                # Starting from t_1 (for t_0 we have used initial condition
+                # Value for t_i -> t
+                t = self.t[t_i]
+                s_i = 0
+
+                # Compute U[x0...s_max, t_i]
+                s_sum = 0
+                for s_i in range(1, self.s_array_size - 1):
+                    # Compute U at spatial mesh points U(x_i, t_n)
+                    # R stands for spatial ODE
+                    s = self.s[s_i]
+
+                    if equation_type == non_linear:
+                        R1 = -self.beta * self.U_st[s_i, t_i - 1] ** 3
+                        R2 = self.r * s * (self.U_st[s_i + 1, t_i - 1] - self.U_st[s_i, t_i - 1]) / self.ds
+                        R3 = 0.5 * (self.sigma ** 2) * (s ** 2) * (
+                                self.U_st[s_i - 1, t_i - 1] - 2 * self.U_st[s_i, t_i - 1] + self.U_st[
+                            s_i + 1, t_i - 1]) / (self.ds ** 2)
+
+                        R = R1 + R2 + R3
+                    elif equation_type == linear:
+                        R1 = -self.r * self.U_st[s_i, t_i - 1]
+                        R2 = self.r * s * (self.U_st[s_i + 1, t_i - 1] - self.U_st[s_i - 1, t_i - 1]) / (2 * self.ds)
+                        R3 = 0.5 * (self.sigma ** 2) * (s ** 2) * (
+                                self.U_st[s_i - 1, t_i - 1] - 2 * self.U_st[s_i, t_i - 1] + self.U_st[
+                            s_i + 1, t_i - 1]) / (self.ds ** 2)
+
+                        R = R1 + R2 + R3
+
+                    # Runge-Kutta4 coeficients
+                    k1 = self.dt * R
+                    k2 = self.dt * (R + 0.5 * k1)
+                    k3 = self.dt * (R + 0.5 * k2)
+                    k4 = self.dt * (R + k3)
+
+                    # Deriviated function in time domain
+                    self.U_st[s_i, t_i] = self.U_st[s_i, t_i - 1] + (1.0 / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
+
+                    # Check option price for given S and t
+                    if s >= self.s_price and t >= self.t_year and self.found == False:
+                        print("got it")
+                        self.calculated_option_price = (self.U_st[s_i, t_i], s, t)
+                        self.found = True
+
+                    # Find max U_st - important for plot function
+                    if self.U_max < self.U_st[s_i, t_i]:
+                        self.U_max = self.U_st[s_i, t_i]
+                    s_sum = s_sum + self.s[s_i + 1]
+                # Insert boundary conditions / Runge-Kutta at s = 0, and s = s_max
+                self.U_st[0, t_i] = 0
+
+                s_avg = s_sum/s_i
+                self.U_st[s_i + 1, t_i] = s_avg - self.k
+
+        except FloatingPointError as e:
+            print("Exception at t = {} and s = {}, {}, exiting!".format(t, s, e))
+            return False
+
+        return True
+
     def plot(self, name_prefix):
         """
         Plot 3D chart for given option and save it on disk.
@@ -193,28 +276,23 @@ class Solver(object):
 
         # Add a color bar which maps values to colors.
         fig.colorbar(surf, shrink=0.5, aspect=5)
-        file_name = "{}_K{}_sigma{}_r{}_T{}_linear".format(name_prefix, self.k, self.sigma, self.r, self.t_max)
-        if self.equation_type == linear:
-            file_name = "{}_K{}_sigma{}_r{}_beta{}_T{}_nonlinear".format(name_prefix, self.k, self.sigma, self.r, self.beta, self.t_max)
+        file_name = "{}_K{}_sigma{}_r{}_T{}_linear_{}".format(name_prefix, self.k, self.sigma, self.r, self.t_max, self.option_type)
+        if self.equation_type == non_linear:
+            file_name = "{}_K{}_sigma{}_r{}_beta{}_T{}_nonlinear_{}".format(name_prefix, self.k, self.sigma, self.r, self.beta, self.t_max, self.option_type)
         plt.savefig('numerical_computations/' + file_name + '.png')
 
 
 if __name__ == '__main__':
 
-    # Option OW20A202100
-    # K = 2100
-    # S0 = 2230.15
-    # sigma = 0.02
-    # r = 0.03
     s_max = 2350
     t_max = 0.9
-    k = 1650
-    beta = 0.00045
+    k = 800
+    beta = 0.000015
     sigma = 0.02
-    r = 0.03
+    r = 0.01
 
-    p = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, sigma=sigma, r=r, s_price=1800, t_days=35)
-    if p.pdeSolver(equation_type=linear):
+    p = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, sigma=sigma, r=r, s_price=1800, t_days=20)
+    if p.pdeSolverAsian(equation_type=linear):
         p.plot('Black-Scholes')
         option_price, asset_price, expiration_time_in_years = p.calculated_option_price
         print('Option price: {}, asset price: {}, expiration time [{} years, {} days]'.format(option_price,
