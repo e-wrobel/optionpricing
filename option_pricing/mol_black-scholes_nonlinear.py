@@ -10,6 +10,7 @@ np.seterr(all='ignore')
 linear = 'Linear'
 non_linear = 'Non-linear'
 
+days_in_year = 252.0
 
 class Solver(object):
     """
@@ -40,7 +41,7 @@ class Solver(object):
 
         # Asset price and option expiration time (in years)
         self.s_price = s_price
-        self.t_year = t_days/365.0
+        self.t_year = t_days/days_in_year
         self.found = False
 
         # Option price for given s_price and t_year
@@ -108,7 +109,7 @@ class Solver(object):
                     s = self.s[s_i]
 
                     if equation_type == non_linear:
-                        R1 = -self.beta * self.U_st[s_i, t_i - 1] ** 3
+                        R1 = -self.r * self.U_st[s_i, t_i - 1] -self.beta * self.U_st[s_i, t_i - 1] ** 3
                         R2 = self.r * s * (self.U_st[s_i + 1, t_i - 1] - self.U_st[s_i, t_i - 1]) / self.ds
                         R3 = 0.5 * (self.sigma ** 2) * (s ** 2) * (
                                 self.U_st[s_i - 1, t_i - 1] - 2 * self.U_st[s_i, t_i - 1] + self.U_st[
@@ -188,7 +189,7 @@ class Solver(object):
                     s = self.s[s_i]
 
                     if equation_type == non_linear:
-                        R1 = -self.beta * self.U_st[s_i, t_i - 1] ** 3
+                        R1 = -self.r * self.U_st[s_i, t_i - 1] -self.beta * self.U_st[s_i, t_i - 1] ** 3
                         R2 = self.r * s * (self.U_st[s_i + 1, t_i - 1] - self.U_st[s_i, t_i - 1]) / self.ds
                         R3 = 0.5 * (self.sigma ** 2) * (s ** 2) * (
                                 self.U_st[s_i - 1, t_i - 1] - 2 * self.U_st[s_i, t_i - 1] + self.U_st[
@@ -287,15 +288,15 @@ if __name__ == '__main__':
     s_max = 2350
     t_max = 0.9
     k = 800
-    beta = 0.000015
+    beta = 0.000009
     sigma = 0.02
     r = 0.01
 
-    p = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, sigma=sigma, r=r, s_price=1800, t_days=20)
-    if p.pdeSolverAsian(equation_type=linear):
+    p = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, sigma=sigma, r=r, s_price=1200, t_days=40)
+    if p.pdeSolverAsian(equation_type=non_linear):
         p.plot('Black-Scholes')
         option_price, asset_price, expiration_time_in_years = p.calculated_option_price
         print('Option price: {}, asset price: {}, expiration time [{} years, {} days]'.format(option_price,
                                                                                           asset_price,
                                                                                           expiration_time_in_years,
-                                                                                          expiration_time_in_years*365))
+                                                                                          expiration_time_in_years*days_in_year))

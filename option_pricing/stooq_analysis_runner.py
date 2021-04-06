@@ -71,6 +71,9 @@ if __name__ == "__main__":
 
     options_calculated = []
     options_data = []
+    sigma_values = []
+    beta_values = []
+
     for option in available_options:
         print("Performing calculation for option: {}".format(option))
 
@@ -99,7 +102,12 @@ if __name__ == "__main__":
                                  FLOAT_PRECISION.format(bs_price),
                                  FLOAT_PRECISION.format(option_price_from_boundary_condition),
                                  FLOAT_PRECISION.format(calculated_option_dict["calculated_option_price"]),
-                                 BETA_FLOAT_PRECISION.format(calculated_option_dict["calculated_beta"])])
+                                 BETA_FLOAT_PRECISION.format(calculated_option_dict["calculated_beta"]),
+                                 FLOAT_PRECISION.format(calculated_option_dict["volatility"]),
+                                 FLOAT_PRECISION.format(calculated_option_dict["r"]),
+                                 calculated_option_dict["T"]])
+            sigma_values.append(calculated_option_dict["volatility"])
+            beta_values.append(calculated_option_dict["calculated_beta"])
         except Exception as e:
             print("Skipping calculation for option: {}, not enough data, exception: {} ".format(option, e))
 
@@ -109,4 +117,6 @@ if __name__ == "__main__":
 
     print("Finished. Calculations were performed for options: {}".format(','.join(options_calculated)))
     s.plot_summary_table(options_data, plot_directory=plot_dir)
+    s.prepare_neural_data(options_data, directory=plot_dir)
+    s.prepare_sigma_beta(beta_data=beta_values, sigma_data=sigma_values,  plot_directory=plot_dir)
     s.end_connection()

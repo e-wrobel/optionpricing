@@ -31,7 +31,7 @@ VOLUME = 'volume'
 LOP = 'lop'
 OPTION = 'option'
 ASSET = 'asset'
-DAYS_IN_YEAR = 365
+DAYS_IN_YEAR = 252
 TABLE_NAME_FILE = 'OPTIONS_SUMMARY'
 
 
@@ -193,7 +193,10 @@ class Stooq(StooqBase):
             "calculated_option_price": out.CalculatedOptionprice,
             "calculated_expiration_days": out.CalculatedExpirationDays,
             "calculated_asset_price": out.CalculatedAssetPrice,
-            "calculated_beta": out.CalculatedBeta
+            "calculated_beta": out.CalculatedBeta,
+            "volatility": volatility,
+            "r": r,
+            "T": T,
         }
 
         return option_asset_data_structure, volatility, bs_price, option_price_from_boundary_condition, \
@@ -275,6 +278,8 @@ class Stooq(StooqBase):
         fig.tight_layout()
 
         plt.savefig("{}/{}.png".format(plot_directory, option_name))
+        fig.clear()
+        plt.close(fig)
 
     def plot_summary_table(self, data: list, plot_directory: str):
         """
@@ -292,7 +297,7 @@ class Stooq(StooqBase):
         ax.axis('tight')
 
         # create data
-        column_labels = ["Option", "BS Analytical", "S-K", "BS Nonlinear", "Beta"]
+        column_labels = ["Option", "BS Analytical", "S-K", "BS Nonlinear", "Beta", "Volatility", "r", "T"]
 
         # create table
         table = ax.table(cellText=data, colLabels=column_labels, loc='center', cellLoc='center')
@@ -302,4 +307,68 @@ class Stooq(StooqBase):
         # display table
         fig.tight_layout()
         plt.savefig("{}/{}.png".format(plot_directory, TABLE_NAME_FILE), dpi=600)
+        fig.clear()
+        plt.close(fig)
+
+    def prepare_neural_data(self, data: list, directory: str):
+        """
+        Prepare data for neural network.
+
+        :param data: option data
+        :param directory: directory to save neural file
+        """
+
+        raw_data = "{}/{}".format(directory, 'raw_data.txt')
+        path_input = "{}/{}".format(directory, 'neural_input.txt')
+        path_values = "{}/{}".format(directory, 'neural_values.txt')
+        vals = []
+
+        with open(raw_data, 'w') as file:
+            file.write("Option, BS Analytical, S-K, BS Nonlinear, Beta, Volatility, r, T\n")
+            for d in data:
+                i = "[{}, {}, {}, {}, {}, {}, {}, {}]\n".format(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7])
+                file.write(i)
+
+        with open(path_input, 'w') as file:
+            for d in data:
+                i = "[{}, {}], ".format(d[5], d[7])
+                vals.append(d[4])
+                file.write(i)
+
+        with open(path_values, 'w') as file:
+            file.write('[')
+            for v in vals:
+                i = "{}, ".format(v)
+                file.write(i)
+            file.write(']')
+
+    def prepare_sigma_beta(self, beta_data: list, sigma_data: list, plot_directory: str):
+        """
+        Prepares plot for sigma vs beta
+        :param plot_directory: directory to save neural file
+        :param sigma_data: List of sigma values
+        :param beta_data: List of corresponding beta values
+
+        :return: None
+        """
+
+        dist = norm()
+        # Data for plotting
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6), facecolor='w')
+
+        ax1.grid()
+        ax1.scatter(beta_data, sigma_data)
+
+        ax1.set(xlabel='Beta', ylabel='Sigma',
+               title='Beta vs Sigma relation from calculated data')
+
+        ax2.grid()
+        ax2.hist(beta_data, density=True, bins=len(beta_data))
+        ax2.set(xlabel='Beta', ylabel='Probability',
+                title='Histogram for beta')
+        ax2.legend(loc='best', frameon=False)
+        fig.savefig("{}/{}".format(plot_directory, 'beta_vs_sigma.png'))
+        fig.clear()
+        plt.close(fig)
+
 
