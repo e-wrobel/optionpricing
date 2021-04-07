@@ -6,6 +6,8 @@ import (
 	stubs "optionpricing/option"
 )
 
+const daysInYear = 252.0
+
 func computeLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta, s0 float64, t int32) ([][]float64, float64, int32, float64, error) {
 	isFound := false
 	var calculatedPrice float64
@@ -73,10 +75,10 @@ func computeLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta,
 			currentTimeYears := dt * float64(tIndex)
 
 			// Check option price for given asset price and maturity T
-			if currentTimeYears >= float64(t)/365.0 && s >= s0 && !isFound {
+			if currentTimeYears >= float64(t)/daysInYear && s >= s0 && !isFound {
 				isFound = true
 				calculatedPrice = Uxt[sIndex][tIndex]
-				calculatedDays = int32(currentTimeYears * 365.0)
+				calculatedDays = int32(currentTimeYears * daysInYear)
 				calculatedAssetPrice = s
 			}
 		}
@@ -144,7 +146,7 @@ func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, be
 		for sIndex := 1; sIndex < spatialSize-1; sIndex++ {
 			s := priceSlice[sIndex]
 
-			R1 := -beta * math.Pow(Uxt[sIndex][tIndex-1], 3)
+			R1 := -r*Uxt[sIndex][tIndex-1] - beta*math.Pow(Uxt[sIndex][tIndex-1], 3)
 			R2 := r * s * (Uxt[sIndex+1][tIndex-1] - Uxt[sIndex-1][tIndex-1]) / (2 * ds)
 			R3 := 0.5 * volatility2 * (math.Pow(s, 2)) * (Uxt[sIndex-1][tIndex-1] - 2*Uxt[sIndex][tIndex-1] + Uxt[sIndex+1][tIndex-1]) / ds2
 
@@ -161,10 +163,10 @@ func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, be
 			currentTimeYears := dt * float64(tIndex)
 
 			// Check option price for given asset price and maturity T
-			if currentTimeYears >= float64(t)/365.0 && s >= s0 && !isFound {
+			if currentTimeYears >= float64(t)/daysInYear && s >= s0 && !isFound {
 				isFound = true
 				calculatedPrice = Uxt[sIndex][tIndex]
-				calculatedDays = int32(currentTimeYears * 365.0)
+				calculatedDays = int32(currentTimeYears * daysInYear)
 				calculatedAssetPrice = s
 			}
 		}

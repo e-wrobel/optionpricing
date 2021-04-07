@@ -27,7 +27,7 @@ VOLUME = 'volume'
 LOP = 'lop'
 OPTION = 'option'
 ASSET = 'asset'
-DAYS_IN_YEAR = 365
+DAYS_IN_YEAR = 252
 
 
 class StooqBase(object):
