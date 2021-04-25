@@ -63,12 +63,12 @@ class HestonModel(object):
         ax1.grid()
         ax1.plot(range(self.T), s_t)
 
-        ax1.set(xlabel='T [Years]', ylabel='Option Price',
-                title='Option price calculated by Heston model')
+        ax1.set(xlabel='T [Days]', ylabel='Option Price',
+                title='Asset price calculated by Heston model')
 
         ax2.grid()
         ax2.plot(range(self.T), v_t, c='coral')
-        ax2.set(xlabel='T [Years]', ylabel='Stochastic volatility',
+        ax2.set(xlabel='T [Days]', ylabel='Stochastic volatility',
                 title='Volatility calculated for Heston model')
 
         fig.savefig("{}/{}".format(plot_directory, 'heston.png'))

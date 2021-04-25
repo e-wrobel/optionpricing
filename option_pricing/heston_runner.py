@@ -1,7 +1,7 @@
 from option_pricing.optionlib.heston_model import HestonModel
 
 if __name__ == '__main__':
-    T = 365
+    T = 252
     dt = 1 / 252
     S0 = 100  # Initial price
     mu = 0.1  # Expected return
