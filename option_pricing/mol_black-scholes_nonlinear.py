@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.ticker import LinearLocator, FormatStrFormatter
 from matplotlib import cm
-
+from option_pricing.black_scholes_option_pricing import Option
 np.seterr(all='ignore')
 
 linear = 'Linear'
@@ -31,7 +31,7 @@ class Solver(object):
         """
 
         self.equation_type = linear
-        self.option_type = 'american'
+        self.option_type = None
 
         # Option pricing parameters
         self.sigma = np.float64(sigma)
@@ -88,6 +88,7 @@ class Solver(object):
         :return: True or False (in case of computation error)
         """
 
+        self.option_type = "european"
         self.equation_type = equation_type
 
         # Set initial condition u(s,t=0) = initialFunction(s)
@@ -236,6 +237,90 @@ class Solver(object):
 
         return True
 
+    def pdeSolverAmerican(self, equation_type=linear):
+        """
+        Pde solver.
+
+        :type equation_type: Linear on NonLinear
+
+        :return: True or False (in case of computation error)
+        """
+
+        self.option_type = "american"
+        self.equation_type = equation_type
+
+        # Set initial condition u(s,t=0) = initialFunction(s)
+        for s_i in range(self.s_array_size):
+            self.U_st[s_i, 0] = self.initialFunction(self.s[s_i])
+
+        try:
+            # Calculate for t + dt
+            for t_i in range(1, self.t_array_size):
+                # Starting from t_1 (for t_0 we have used initial condition
+                # Value for t_i -> t
+                t = self.t[t_i]
+                s_i = 0
+
+                # Compute U[x0...s_max, t_i]
+                for s_i in range(1, self.s_array_size - 1):
+                    # Compute U at spatial mesh points U(x_i, t_n)
+                    # R stands for spatial ODE
+                    s = self.s[s_i]
+
+                    if equation_type == non_linear:
+                        R1 = -self.r * self.U_st[s_i, t_i - 1] -self.beta * self.U_st[s_i, t_i - 1] ** 3
+                        R2 = self.r * s * (self.U_st[s_i + 1, t_i - 1] - self.U_st[s_i, t_i - 1]) / self.ds
+                        R3 = 0.5 * (self.sigma ** 2) * (s ** 2) * (
+                                self.U_st[s_i - 1, t_i - 1] - 2 * self.U_st[s_i, t_i - 1] + self.U_st[
+                            s_i + 1, t_i - 1]) / (self.ds ** 2)
+
+                        R = R1 + R2 + R3
+                    elif equation_type == linear:
+                        R1 = -self.r * self.U_st[s_i, t_i - 1]
+                        R2 = self.r * s * (self.U_st[s_i + 1, t_i - 1] - self.U_st[s_i - 1, t_i - 1]) / (2 * self.ds)
+                        R3 = 0.5 * (self.sigma ** 2) * (s ** 2) * (
+                                self.U_st[s_i - 1, t_i - 1] - 2 * self.U_st[s_i, t_i - 1] + self.U_st[
+                            s_i + 1, t_i - 1]) / (self.ds ** 2)
+
+                        R = R1 + R2 + R3
+
+                    # Runge-Kutta4 coeficients
+                    k1 = self.dt * R
+                    k2 = self.dt * (R + 0.5 * k1)
+                    k3 = self.dt * (R + 0.5 * k2)
+                    k4 = self.dt * (R + k3)
+
+                    # Deriviated function in time domain
+                    actual_price1 = max(s - self.k, 0.0)
+                    o = Option(s, self.k, 1, self.r, self.sigma)
+                    actual_price = o.euro_vanilla_call()
+                    calculated_price = self.U_st[s_i, t_i - 1] + (1.0 / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
+
+                    if actual_price >= calculated_price:
+                        self.U_st[s_i, t_i] = actual_price
+                    else:
+                        self.U_st[s_i, t_i] = calculated_price
+
+                        # Check option price for given S and t
+                    if s >= self.s_price and t >= self.t_year and self.found == False:
+                        print("got it")
+                        self.calculated_option_price = (self.U_st[s_i, t_i], s, t)
+                        self.found = True
+
+                    # Find max U_st - important for plot function
+                    if self.U_max < self.U_st[s_i, t_i]:
+                        self.U_max = self.U_st[s_i, t_i]
+
+                # Insert boundary conditions / Runge-Kutta at s = 0, and s = s_max
+                self.U_st[0, t_i] = 0
+                self.U_st[s_i + 1, t_i] = self.s[s_i + 1] - self.k
+
+        except FloatingPointError as e:
+            print("Exception at t = {} and s = {}, {}, exiting!".format(t, s, e))
+            return False
+
+        return True
+
     def plot(self, name_prefix):
         """
         Plot 3D chart for given option and save it on disk.
@@ -287,15 +372,23 @@ if __name__ == '__main__':
 
     s_max = 2350
     t_max = 0.9
-    k = 800
-    beta = 0.000009
+    k = 1500
+    beta = 0.000002
     sigma = 0.02
     r = 0.01
 
-    p = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, sigma=sigma, r=r, s_price=1200, t_days=40)
-    if p.pdeSolverAsian(equation_type=non_linear):
-        p.plot('Black-Scholes')
-        option_price, asset_price, expiration_time_in_years = p.calculated_option_price
+    p_european = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, sigma=sigma, r=r, s_price=1200, t_days=40)
+    if p_european.pdeSolver(equation_type=non_linear):
+        p_european.plot('Black-Scholes')
+        option_price, asset_price, expiration_time_in_years = p_european.calculated_option_price
+        print('Option price: {}, asset price: {}, expiration time [{} years, {} days]'.format(option_price,
+                                                                                          asset_price,
+                                                                                          expiration_time_in_years,
+                                                                                          expiration_time_in_years*days_in_year))
+    p_american = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, sigma=sigma, r=r, s_price=1200, t_days=40)
+    if p_american.pdeSolverAmerican(equation_type=non_linear):
+        p_american.plot('Black-Scholes')
+        option_price, asset_price, expiration_time_in_years = p_american.calculated_option_price
         print('Option price: {}, asset price: {}, expiration time [{} years, {} days]'.format(option_price,
                                                                                           asset_price,
                                                                                           expiration_time_in_years,
