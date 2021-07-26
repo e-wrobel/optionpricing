@@ -222,30 +222,30 @@ if __name__ == '__main__':
     path = "/Users/marcinwroblewski/GolandProjects/optionpricing/option_pricing/option_data/American"
 
     # # Netflix
-    # stock = "nflx"
-    #
-    # with open('{}/{}'.format(path, 'netflix_options.txt')) as f:
-    #     options = [x.rstrip() for x in f]
-    #
-    # for option in options:
-    #     try:
-    #         a = AmericanOptions(stock=stock, option=option)
-    #         a.get_data(path=path)
-    #     except Exception as e:
-    #         print('Unable to make calculation for option: {}, error: {}'.format(option, e))
+    stock = "nflx"
+
+    with open('{}/{}'.format(path, 'netflix_options.txt')) as f:
+        options = [x.rstrip() for x in f]
+
+    for option in options:
+        try:
+            a = AmericanOptions(stock=stock, option=option)
+            a.get_data(path=path)
+        except Exception as e:
+            print('Unable to make calculation for option: {}, error: {}'.format(option, e))
 
     # Apple
-    # stock = "aapl"
-    #
-    # with open('{}/{}'.format(path, 'apple_options.txt')) as f:
-    #     options = [x.rstrip() for x in f]
-    #
-    # for option in options:
-    #     try:
-    #         a = AmericanOptions(stock=stock, option=option)
-    #         a.get_data(path=path)
-    #     except Exception as e:
-    #         print('Unable to make calculation for option: {}, error: {}'.format(option, e))
+    stock = "aapl"
+
+    with open('{}/{}'.format(path, 'apple_options.txt')) as f:
+        options = [x.rstrip() for x in f]
+
+    for option in options:
+        try:
+            a = AmericanOptions(stock=stock, option=option)
+            a.get_data(path=path)
+        except Exception as e:
+            print('Unable to make calculation for option: {}, error: {}'.format(option, e))
 
     # Tesla
     stock = "tsla"

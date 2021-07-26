@@ -2,3 +2,4 @@
 .DS_Store
 *.pyc
 venv
+option_pricing/option_data/American

@@ -97,7 +97,6 @@ func computeLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta,
 }
 
 func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta, s0 float64, t int32) ([][]float64, float64, int32, float64, error) {
-	isFound := false
 	var calculatedPrice float64
 	var calculatedDays int32
 	var calculatedAssetPrice float64
@@ -163,11 +162,17 @@ func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, be
 			currentTimeYears := dt * float64(tIndex)
 
 			// Check option price for given asset price and maturity T
-			if currentTimeYears >= float64(t)/daysInYear && s >= s0 && !isFound {
-				isFound = true
+			if currentTimeYears >= float64(t)/daysInYear && s >= s0 {
 				calculatedPrice = Uxt[sIndex][tIndex]
 				calculatedDays = int32(currentTimeYears * daysInYear)
 				calculatedAssetPrice = s
+
+				if math.IsNaN(calculatedPrice) {
+					fmt.Printf("CalculatedPris is NAN\n")
+					return Uxt, 0, 0, 0, fmt.Errorf("calculatedPrice is NAN")
+				}
+
+				return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, nil
 			}
 		}
 
@@ -177,11 +182,7 @@ func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, be
 
 	}
 
-	if !isFound {
-		return Uxt, 0, 0, 0, fmt.Errorf("unable to find option parameters")
-	}
-
-	return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, nil
+	return Uxt, 0, 0, 0, fmt.Errorf("unable to find option parameters")
 }
 
 func calibrateBetaForNonLinearBs(leftBeta, rightBeta float64, incommingRequest *stubs.ComputeRequest) ([][]float64, float64, int32, float64, float64, error) {
@@ -192,14 +193,14 @@ func calibrateBetaForNonLinearBs(leftBeta, rightBeta float64, incommingRequest *
 	isFound := false
 	i := 0
 
-	for leftBeta <= rightBeta {
+	for leftBeta < rightBeta {
 		middleBeta = (leftBeta + rightBeta) / 2
 		incommingRequest.Beta = middleBeta
 		Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, err = computeNonLinearBlackScholes(incommingRequest.MaxPrice,
 			incommingRequest.Volatility, incommingRequest.R, incommingRequest.TMax, incommingRequest.StrikePrice, incommingRequest.Beta,
 			incommingRequest.StartPrice, incommingRequest.MaturityTimeDays)
 		if err != nil {
-			return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, middleBeta, fmt.Errorf("numerical computation error: %v", err)
+			return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, middleBeta, fmt.Errorf("computation error: %v", err)
 		}
 		if int32(calculatedPrice) == int32(incommingRequest.ExpectedPrice) {
 			isFound = true

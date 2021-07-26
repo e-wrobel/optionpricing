@@ -2,8 +2,10 @@
 
 out=""
 
-for o in `ls | grep NFLX | cut -d '.' -f1`
-  do out+=", $o"
+for o in `cat hosts.ini`
+do
+  o = "ssh root@&o -c 'hostname'"
+  out+=$o
 done
 
 echo $out

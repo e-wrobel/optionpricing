@@ -27,8 +27,8 @@ func (o *optionPricingServer) ComputePrice(ctx context.Context, input *stubs.Com
 		}
 		U = FromMatrixToStruct(Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, 0)
 	} else if input.CalculationType == nonlinear {
-		leftBeta := -0.0005
-		rightBeta := 0.0005
+		leftBeta := -0.001
+		rightBeta := 0.05
 		Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, beta, err = calibrateBetaForNonLinearBs(leftBeta, rightBeta, input)
 		if err != nil {
 			return U, fmt.Errorf("error received from calibrateBetaForNonLinearBs: %v", err)
