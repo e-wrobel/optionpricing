@@ -12,6 +12,7 @@ non_linear = 'Non-linear'
 
 days_in_year = 252.0
 
+# https://bankingschool.co.in/indian-financial-system/how-to-convert-volatility-from-annual-to-daily-weekly-or-monthly/
 class Solver(object):
     """
         At the basis of:
