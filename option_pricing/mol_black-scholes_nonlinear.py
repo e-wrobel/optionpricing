@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 from numpy import linspace
 import matplotlib.pyplot as plt
@@ -19,13 +21,13 @@ class Solver(object):
         https://github.com/hplgit/num-methods-for-PDEs/blob/master/src/diffu/diffu1D_u0.py
     """
 
-    def __init__(self, s_max, t_max, k, beta, sigma, r, s_price, t_days):
+    def __init__(self, s_max, t_max, k, beta, anual_sigma, r, s_price, t_days):
         """
         :param s_max: Max price
         :param t_max: Max expiration time
         :param k: Strike price
         :param beta: Non-linear parameter
-        :param sigma: Asset price volatility
+        :param anual_sigma: Asset price volatility
         :param r: Risk-free interest rate
         :param s_price: Asset price from the market
         :param t_days: Expiration time for option in days
@@ -35,7 +37,10 @@ class Solver(object):
         self.option_type = None
 
         # Option pricing parameters
-        self.sigma = np.float64(sigma)
+        self.anual_sigma = anual_sigma
+        self.sigma_for_t = np.float64(anual_sigma/math.sqrt(days_in_year/t_days))
+        self.sigma_for_one_day = np.float64(anual_sigma/math.sqrt(days_in_year))
+
         self.r = np.float64(r)
         self.k = np.float64(k)
         self.beta = np.float64(beta)
@@ -55,7 +60,7 @@ class Solver(object):
         # Max s, max t
         self.s_max = np.float64(s_max)
         self.t_max = np.float64(t_max)
-        self.dt = (self.ds ** 2) / (39 * self.sigma ** 2 + 0.5 * self.r) / s_max ** 2
+        self.dt = (self.ds ** 2) / (39 * self.sigma_for_t ** 2 + 0.5 * self.r) / s_max ** 2
         self.s_array_size = int(self.s_max / self.ds)
         self.t_array_size = int(self.t_max / self.dt)
 
@@ -113,7 +118,7 @@ class Solver(object):
                     if equation_type == non_linear:
                         R1 = -self.r * self.U_st[s_i, t_i - 1] -self.beta * self.U_st[s_i, t_i - 1] ** 3
                         R2 = self.r * s * (self.U_st[s_i + 1, t_i - 1] - self.U_st[s_i, t_i - 1]) / self.ds
-                        R3 = 0.5 * (self.sigma ** 2) * (s ** 2) * (
+                        R3 = 0.5 * (self.sigma_for_t ** 2) * (s ** 2) * (
                                 self.U_st[s_i - 1, t_i - 1] - 2 * self.U_st[s_i, t_i - 1] + self.U_st[
                             s_i + 1, t_i - 1]) / (self.ds ** 2)
 
@@ -121,7 +126,7 @@ class Solver(object):
                     elif equation_type == linear:
                         R1 = -self.r * self.U_st[s_i, t_i - 1]
                         R2 = self.r * s * (self.U_st[s_i + 1, t_i - 1] - self.U_st[s_i - 1, t_i - 1]) / (2 * self.ds)
-                        R3 = 0.5 * (self.sigma ** 2) * (s ** 2) * (
+                        R3 = 0.5 * (self.sigma_for_t ** 2) * (s ** 2) * (
                                 self.U_st[s_i - 1, t_i - 1] - 2 * self.U_st[s_i, t_i - 1] + self.U_st[
                             s_i + 1, t_i - 1]) / (self.ds ** 2)
 
@@ -193,7 +198,7 @@ class Solver(object):
                     if equation_type == non_linear:
                         R1 = -self.r * self.U_st[s_i, t_i - 1] -self.beta * self.U_st[s_i, t_i - 1] ** 3
                         R2 = self.r * s * (self.U_st[s_i + 1, t_i - 1] - self.U_st[s_i, t_i - 1]) / self.ds
-                        R3 = 0.5 * (self.sigma ** 2) * (s ** 2) * (
+                        R3 = 0.5 * (self.sigma_for_t ** 2) * (s ** 2) * (
                                 self.U_st[s_i - 1, t_i - 1] - 2 * self.U_st[s_i, t_i - 1] + self.U_st[
                             s_i + 1, t_i - 1]) / (self.ds ** 2)
 
@@ -201,7 +206,7 @@ class Solver(object):
                     elif equation_type == linear:
                         R1 = -self.r * self.U_st[s_i, t_i - 1]
                         R2 = self.r * s * (self.U_st[s_i + 1, t_i - 1] - self.U_st[s_i - 1, t_i - 1]) / (2 * self.ds)
-                        R3 = 0.5 * (self.sigma ** 2) * (s ** 2) * (
+                        R3 = 0.5 * (self.sigma_for_t ** 2) * (s ** 2) * (
                                 self.U_st[s_i - 1, t_i - 1] - 2 * self.U_st[s_i, t_i - 1] + self.U_st[
                             s_i + 1, t_i - 1]) / (self.ds ** 2)
 
@@ -271,7 +276,7 @@ class Solver(object):
                     if equation_type == non_linear:
                         R1 = -self.r * self.U_st[s_i, t_i - 1] -self.beta * self.U_st[s_i, t_i - 1] ** 3
                         R2 = self.r * s * (self.U_st[s_i + 1, t_i - 1] - self.U_st[s_i, t_i - 1]) / self.ds
-                        R3 = 0.5 * (self.sigma ** 2) * (s ** 2) * (
+                        R3 = 0.5 * (self.sigma_for_t ** 2) * (s ** 2) * (
                                 self.U_st[s_i - 1, t_i - 1] - 2 * self.U_st[s_i, t_i - 1] + self.U_st[
                             s_i + 1, t_i - 1]) / (self.ds ** 2)
 
@@ -279,7 +284,7 @@ class Solver(object):
                     elif equation_type == linear:
                         R1 = -self.r * self.U_st[s_i, t_i - 1]
                         R2 = self.r * s * (self.U_st[s_i + 1, t_i - 1] - self.U_st[s_i - 1, t_i - 1]) / (2 * self.ds)
-                        R3 = 0.5 * (self.sigma ** 2) * (s ** 2) * (
+                        R3 = 0.5 * (self.sigma_for_t ** 2) * (s ** 2) * (
                                 self.U_st[s_i - 1, t_i - 1] - 2 * self.U_st[s_i, t_i - 1] + self.U_st[
                             s_i + 1, t_i - 1]) / (self.ds ** 2)
 
@@ -292,8 +297,7 @@ class Solver(object):
                     k4 = self.dt * (R + k3)
 
                     # Deriviated function in time domain
-                    actual_price1 = max(s - self.k, 0.0)
-                    o = Option(s, self.k, 1, self.r, self.sigma)
+                    o = Option(s, self.k, 1, self.r, self.sigma_for_one_day)
                     actual_price = o.euro_vanilla_call()
                     calculated_price = self.U_st[s_i, t_i - 1] + (1.0 / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
 
@@ -352,8 +356,8 @@ class Solver(object):
                               "\nBoundary condition: V(S=0, t)=0"
                               "\nBoundary condition: V(S=$S_M)=S_M - K$"
                               "\n$S\in$(0, {:0.2f}) and $t\in$(0, {})"
-                              "\n$\sigma=${}, $r=${}"
-                  .format(self.equation_type, self.k, self.s_max, self.t_max, self.sigma, self.r) + beta_info, size=10,
+                              "\n$annual\tsigma=${}, $r=${}"
+                  .format(self.equation_type, self.k, self.s_max, self.t_max, self.anual_sigma, self.r) + beta_info, size=10,
                   transform=ax.transAxes)
 
         # Customize the z axis.
@@ -363,9 +367,9 @@ class Solver(object):
 
         # Add a color bar which maps values to colors.
         fig.colorbar(surf, shrink=0.5, aspect=5)
-        file_name = "{}_K{}_sigma{}_r{}_T{}_linear_{}".format(name_prefix, self.k, self.sigma, self.r, self.t_max, self.option_type)
+        file_name = "{}_K{}_sigma{}_r{}_T{}_linear_{}".format(name_prefix, self.k, self.anual_sigma, self.r, self.t_max, self.option_type)
         if self.equation_type == non_linear:
-            file_name = "{}_K{}_sigma{}_r{}_beta{}_T{}_nonlinear_{}".format(name_prefix, self.k, self.sigma, self.r, self.beta, self.t_max, self.option_type)
+            file_name = "{}_K{}_sigma{}_r{}_beta{}_T{}_nonlinear_{}".format(name_prefix, self.k, self.anual_sigma, self.r, self.beta, self.t_max, self.option_type)
         plt.savefig('numerical_computations/' + file_name + '.png')
 
 
@@ -373,12 +377,13 @@ if __name__ == '__main__':
 
     s_max = 2350
     t_max = 0.9
-    k = 1500
-    beta = 0.000002
-    sigma = 0.02
-    r = 0.01
 
-    p_european = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, sigma=sigma, r=r, s_price=1200, t_days=40)
+    k = 1400
+    beta = 0.000002
+    sigma = 0.25
+    r = 0.02
+
+    p_european = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, anual_sigma=sigma, r=r, s_price=1500, t_days=40)
     if p_european.pdeSolver(equation_type=non_linear):
         p_european.plot('Black-Scholes')
         option_price, asset_price, expiration_time_in_years = p_european.calculated_option_price
@@ -386,7 +391,7 @@ if __name__ == '__main__':
                                                                                           asset_price,
                                                                                           expiration_time_in_years,
                                                                                           expiration_time_in_years*days_in_year))
-    p_american = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, sigma=sigma, r=r, s_price=1200, t_days=40)
+    p_american = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, anual_sigma=sigma, r=r, s_price=1500, t_days=40)
     if p_american.pdeSolverAmerican(equation_type=non_linear):
         p_american.plot('Black-Scholes')
         option_price, asset_price, expiration_time_in_years = p_american.calculated_option_price
