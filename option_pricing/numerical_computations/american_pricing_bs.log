@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.12.28)  27 JUL 2021 15:25
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.12.28)  9 AUG 2021 12:07
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -263,14 +263,7 @@ Package: float 2001/11/08 v1.3d Float enhancements (AL)
 \@float@everytoks=\toks25
 \@floatcapt=\box51
 )
-(./american_pricing_bs.aux
-
-LaTeX Warning: Label `fig:E' multiply defined.
-
-
-LaTeX Warning: Label `fig:A' multiply defined.
-
-)
+(./american_pricing_bs.aux)
 \openout1 = `american_pricing_bs.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 17.
@@ -289,7 +282,8 @@ LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 17.
 LaTeX Font Info:    ... okay on input line 17.
 LaTeX Font Info:    Checking defaults for OT4/cmr/m/n on input line 17.
 LaTeX Font Info:    ... okay on input line 17.
- (/usr/local/texlive/2020/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+
+(/usr/local/texlive/2020/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count272
 \scratchdimen=\dimen151
@@ -332,64 +326,184 @@ Package pdftex.def Info: american.png  used on input line 35.
 
 {/usr/local/texlive/2020/texmf-var/fonts/map/pdftex/updmap/pdftex.map} <./palcz
 ewski.png> <./european.png>]
-<Black-Scholes_K1500.0_sigma0.02_r0.01_beta2e-06_T0.9_nonlinear_european.png, i
-d=13, 867.24pt x 578.16pt>
-File: Black-Scholes_K1500.0_sigma0.02_r0.01_beta2e-06_T0.9_nonlinear_european.p
-ng Graphic file (type png)
-<use Black-Scholes_K1500.0_sigma0.02_r0.01_beta2e-06_T0.9_nonlinear_european.pn
-g>
-Package pdftex.def Info: Black-Scholes_K1500.0_sigma0.02_r0.01_beta2e-06_T0.9_n
-onlinear_european.png  used on input line 42.
-(pdftex.def)             Requested size: 345.0pt x 229.99835pt.
-<Black-Scholes_K1500.0_sigma0.02_r0.01_beta1e-06_T0.9_nonlinear_american.png, i
-d=14, 867.24pt x 578.16pt>
-File: Black-Scholes_K1500.0_sigma0.02_r0.01_beta1e-06_T0.9_nonlinear_american.p
-ng Graphic file (type png)
-<use Black-Scholes_K1500.0_sigma0.02_r0.01_beta1e-06_T0.9_nonlinear_american.pn
-g>
-Package pdftex.def Info: Black-Scholes_K1500.0_sigma0.02_r0.01_beta1e-06_T0.9_n
-onlinear_american.png  used on input line 49.
-(pdftex.def)             Requested size: 345.0pt x 229.99835pt.
- [2 <./american.png> <./Black-Scholes_K1500.0_sigma0.02_r0.01_beta2e-06_T0.9_no
-nlinear_european.png>]
-<Black-Scholes_K1500.0_sigma0.02_r0.01_T0.9_linear_european.png, id=20, 867.24p
-t x 578.16pt>
-File: Black-Scholes_K1500.0_sigma0.02_r0.01_T0.9_linear_european.png Graphic fi
-le (type png)
-<use Black-Scholes_K1500.0_sigma0.02_r0.01_T0.9_linear_european.png>
-Package pdftex.def Info: Black-Scholes_K1500.0_sigma0.02_r0.01_T0.9_linear_euro
-pean.png  used on input line 56.
-(pdftex.def)             Requested size: 345.0pt x 229.99835pt.
-<Black-Scholes_K1500.0_sigma0.02_r0.01_T0.9_linear_american.png, id=21, 867.24p
-t x 578.16pt>
-File: Black-Scholes_K1500.0_sigma0.02_r0.01_T0.9_linear_american.png Graphic fi
-le (type png)
-<use Black-Scholes_K1500.0_sigma0.02_r0.01_T0.9_linear_american.png>
-Package pdftex.def Info: Black-Scholes_K1500.0_sigma0.02_r0.01_T0.9_linear_amer
-ican.png  used on input line 63.
-(pdftex.def)             Requested size: 345.0pt x 229.99835pt.
- [3 <./Black-Scholes_K1500.0_sigma0.02_r0.01_beta1e-06_T0.9_nonlinear_american.
-png> <./Black-Scholes_K1500.0_sigma0.02_r0.01_T0.9_linear_european.png>] [4 <./
-Black-Scholes_K1500.0_sigma0.02_r0.01_T0.9_linear_american.png>] (./american_pr
-icing_bs.aux)
+LaTeX Font Info:    Trying to load font information for OML+plm on input line 4
+1.
 
-LaTeX Warning: There were multiply-defined labels.
+(/usr/local/texlive/2020/texmf-dist/tex/latex/polski/omlplm.fd
+File: omlplm.fd 2008/02/24 v1.2.1 Font defs for fonts PL (MW)
+)
+LaTeX Font Info:    Trying to load font information for OMS+plsy on input line 
+41.
 
- ) 
+(/usr/local/texlive/2020/texmf-dist/tex/latex/polski/omsplsy.fd
+File: omsplsy.fd 2008/02/24 v1.2.1 Font defs for fonts PL (MW)
+)
+LaTeX Font Info:    Trying to load font information for OMX+plex on input line 
+41.
+
+(/usr/local/texlive/2020/texmf-dist/tex/latex/polski/omxplex.fd
+File: omxplex.fd 2008/02/24 v1.2.1 Font defs for fonts PL (MW)
+)
+LaTeX Font Info:    External font `plex10' loaded for size
+(Font)              <10> on input line 41.
+LaTeX Font Info:    External font `plex10' loaded for size
+(Font)              <7> on input line 41.
+LaTeX Font Info:    External font `plex10' loaded for size
+(Font)              <5> on input line 41.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 41.
+
+
+(/usr/local/texlive/2020/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 41.
+
+
+(/usr/local/texlive/2020/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+<Black-Scholes_K1600.0_sigma0.2_r0.01_T0.9_linear_european.png, id=13, 867.24pt
+ x 578.16pt>
+File: Black-Scholes_K1600.0_sigma0.2_r0.01_T0.9_linear_european.png Graphic fil
+e (type png)
+<use Black-Scholes_K1600.0_sigma0.2_r0.01_T0.9_linear_european.png>
+Package pdftex.def Info: Black-Scholes_K1600.0_sigma0.2_r0.01_T0.9_linear_europ
+ean.png  used on input line 45.
+(pdftex.def)             Requested size: 172.49216pt x 113.80379pt.
+<Black-Scholes_K1600.0_sigma0.2_r0.01_T0.9_linear_american.png, id=14, 867.24pt
+ x 578.16pt>
+File: Black-Scholes_K1600.0_sigma0.2_r0.01_T0.9_linear_american.png Graphic fil
+e (type png)
+<use Black-Scholes_K1600.0_sigma0.2_r0.01_T0.9_linear_american.png>
+Package pdftex.def Info: Black-Scholes_K1600.0_sigma0.2_r0.01_T0.9_linear_ameri
+can.png  used on input line 46.
+(pdftex.def)             Requested size: 172.49216pt x 113.80379pt.
+<Black-Scholes_K1600.0_sigma0.2_r0.03_T0.9_linear_european.png, id=15, 867.24pt
+ x 578.16pt>
+File: Black-Scholes_K1600.0_sigma0.2_r0.03_T0.9_linear_european.png Graphic fil
+e (type png)
+<use Black-Scholes_K1600.0_sigma0.2_r0.03_T0.9_linear_european.png>
+Package pdftex.def Info: Black-Scholes_K1600.0_sigma0.2_r0.03_T0.9_linear_europ
+ean.png  used on input line 51.
+(pdftex.def)             Requested size: 172.49216pt x 113.80379pt.
+<Black-Scholes_K1600.0_sigma0.2_r0.03_T0.9_linear_american.png, id=16, 867.24pt
+ x 578.16pt>
+File: Black-Scholes_K1600.0_sigma0.2_r0.03_T0.9_linear_american.png Graphic fil
+e (type png)
+<use Black-Scholes_K1600.0_sigma0.2_r0.03_T0.9_linear_american.png>
+Package pdftex.def Info: Black-Scholes_K1600.0_sigma0.2_r0.03_T0.9_linear_ameri
+can.png  used on input line 52.
+(pdftex.def)             Requested size: 172.49216pt x 113.80379pt.
+<Black-Scholes_K1600.0_sigma0.25_r0.02_T0.9_linear_european.png, id=17, 867.24p
+t x 578.16pt>
+File: Black-Scholes_K1600.0_sigma0.25_r0.02_T0.9_linear_european.png Graphic fi
+le (type png)
+<use Black-Scholes_K1600.0_sigma0.25_r0.02_T0.9_linear_european.png>
+Package pdftex.def Info: Black-Scholes_K1600.0_sigma0.25_r0.02_T0.9_linear_euro
+pean.png  used on input line 55.
+(pdftex.def)             Requested size: 172.49216pt x 113.80379pt.
+<Black-Scholes_K1600.0_sigma0.25_r0.02_T0.9_linear_american.png, id=18, 867.24p
+t x 578.16pt>
+File: Black-Scholes_K1600.0_sigma0.25_r0.02_T0.9_linear_american.png Graphic fi
+le (type png)
+<use Black-Scholes_K1600.0_sigma0.25_r0.02_T0.9_linear_american.png>
+Package pdftex.def Info: Black-Scholes_K1600.0_sigma0.25_r0.02_T0.9_linear_amer
+ican.png  used on input line 56.
+(pdftex.def)             Requested size: 172.49216pt x 113.80379pt.
+
+Overfull \hbox (23.98434pt too wide) in paragraph at lines 41--60
+[][] 
+ []
+
+<Black-Scholes_K1600.0_sigma0.2_r0.01_beta2e-06_T0.9_nonlinear_european.png, id
+=19, 867.24pt x 578.16pt>
+File: Black-Scholes_K1600.0_sigma0.2_r0.01_beta2e-06_T0.9_nonlinear_european.pn
+g Graphic file (type png)
+<use Black-Scholes_K1600.0_sigma0.2_r0.01_beta2e-06_T0.9_nonlinear_european.png
+>
+Package pdftex.def Info: Black-Scholes_K1600.0_sigma0.2_r0.01_beta2e-06_T0.9_no
+nlinear_european.png  used on input line 68.
+(pdftex.def)             Requested size: 172.49216pt x 113.80379pt.
+<Black-Scholes_K1600.0_sigma0.2_r0.01_beta2e-06_T0.9_nonlinear_american.png, id
+=20, 867.24pt x 578.16pt>
+File: Black-Scholes_K1600.0_sigma0.2_r0.01_beta2e-06_T0.9_nonlinear_american.pn
+g Graphic file (type png)
+<use Black-Scholes_K1600.0_sigma0.2_r0.01_beta2e-06_T0.9_nonlinear_american.png
+>
+Package pdftex.def Info: Black-Scholes_K1600.0_sigma0.2_r0.01_beta2e-06_T0.9_no
+nlinear_american.png  used on input line 69.
+(pdftex.def)             Requested size: 172.49216pt x 113.80379pt.
+<Black-Scholes_K1600.0_sigma0.2_r0.03_beta2e-06_T0.9_nonlinear_european.png, id
+=21, 867.24pt x 578.16pt>
+File: Black-Scholes_K1600.0_sigma0.2_r0.03_beta2e-06_T0.9_nonlinear_european.pn
+g Graphic file (type png)
+<use Black-Scholes_K1600.0_sigma0.2_r0.03_beta2e-06_T0.9_nonlinear_european.png
+>
+Package pdftex.def Info: Black-Scholes_K1600.0_sigma0.2_r0.03_beta2e-06_T0.9_no
+nlinear_european.png  used on input line 74.
+(pdftex.def)             Requested size: 172.49216pt x 113.80379pt.
+<Black-Scholes_K1600.0_sigma0.2_r0.03_beta2e-06_T0.9_nonlinear_american.png, id
+=22, 867.24pt x 578.16pt>
+File: Black-Scholes_K1600.0_sigma0.2_r0.03_beta2e-06_T0.9_nonlinear_american.pn
+g Graphic file (type png)
+<use Black-Scholes_K1600.0_sigma0.2_r0.03_beta2e-06_T0.9_nonlinear_american.png
+>
+Package pdftex.def Info: Black-Scholes_K1600.0_sigma0.2_r0.03_beta2e-06_T0.9_no
+nlinear_american.png  used on input line 75.
+(pdftex.def)             Requested size: 172.49216pt x 113.80379pt.
+<Black-Scholes_K1600.0_sigma0.25_r0.02_beta2e-06_T0.9_nonlinear_european.png, i
+d=23, 867.24pt x 578.16pt>
+File: Black-Scholes_K1600.0_sigma0.25_r0.02_beta2e-06_T0.9_nonlinear_european.p
+ng Graphic file (type png)
+<use Black-Scholes_K1600.0_sigma0.25_r0.02_beta2e-06_T0.9_nonlinear_european.pn
+g>
+Package pdftex.def Info: Black-Scholes_K1600.0_sigma0.25_r0.02_beta2e-06_T0.9_n
+onlinear_european.png  used on input line 78.
+(pdftex.def)             Requested size: 172.49216pt x 113.80379pt.
+<Black-Scholes_K1600.0_sigma0.25_r0.02_beta2e-06_T0.9_nonlinear_american.png, i
+d=24, 867.24pt x 578.16pt>
+File: Black-Scholes_K1600.0_sigma0.25_r0.02_beta2e-06_T0.9_nonlinear_american.p
+ng Graphic file (type png)
+<use Black-Scholes_K1600.0_sigma0.25_r0.02_beta2e-06_T0.9_nonlinear_american.pn
+g>
+Package pdftex.def Info: Black-Scholes_K1600.0_sigma0.25_r0.02_beta2e-06_T0.9_n
+onlinear_american.png  used on input line 79.
+(pdftex.def)             Requested size: 172.49216pt x 113.80379pt.
+
+Overfull \hbox (23.98434pt too wide) in paragraph at lines 64--83
+[][] 
+ []
+
+[2 <./american.png>] [3 <./Black-Scholes_K1600.0_sigma0.2_r0.01_T0.9_linear_eur
+opean.png> <./Black-Scholes_K1600.0_sigma0.2_r0.01_T0.9_linear_american.png> <.
+/Black-Scholes_K1600.0_sigma0.2_r0.03_T0.9_linear_european.png> <./Black-Schole
+s_K1600.0_sigma0.2_r0.03_T0.9_linear_american.png> <./Black-Scholes_K1600.0_sig
+ma0.25_r0.02_T0.9_linear_european.png> <./Black-Scholes_K1600.0_sigma0.25_r0.02
+_T0.9_linear_american.png>] [4 <./Black-Scholes_K1600.0_sigma0.2_r0.01_beta2e-0
+6_T0.9_nonlinear_european.png> <./Black-Scholes_K1600.0_sigma0.2_r0.01_beta2e-0
+6_T0.9_nonlinear_american.png> <./Black-Scholes_K1600.0_sigma0.2_r0.03_beta2e-0
+6_T0.9_nonlinear_european.png> <./Black-Scholes_K1600.0_sigma0.2_r0.03_beta2e-0
+6_T0.9_nonlinear_american.png> <./Black-Scholes_K1600.0_sigma0.25_r0.02_beta2e-
+06_T0.9_nonlinear_european.png> <./Black-Scholes_K1600.0_sigma0.25_r0.02_beta2e
+-06_T0.9_nonlinear_american.png>] (./american_pricing_bs.aux) ) 
 Here is how much of TeX's memory you used:
- 5227 strings out of 480608
- 80547 string characters out of 5903629
- 457556 words of memory out of 5000000
- 21065 multiletter control sequences out of 15000+600000
- 532834 words of font info for 25 fonts, out of 8000000 for 9000
+ 5346 strings out of 480608
+ 85326 string characters out of 5903629
+ 461556 words of memory out of 5000000
+ 21146 multiletter control sequences out of 15000+600000
+ 537256 words of font info for 40 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 36i,5n,36p,236b,230s stack positions out of 5000i,500n,10000p,200000b,80000s
-{/usr/local/texlive/2020/texmf-dist/fonts/enc/dvips/pl/plrm.enc}</usr/local/t
-exlive/2020/texmf-dist/fonts/type1/public/pl/plr10.pfb>
-Output written on american_pricing_bs.pdf (4 pages, 1072472 bytes).
+ 36i,11n,36p,255b,317s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texl
+ive/2020/texmf-dist/fonts/enc/dvips/pl/plrm.enc}{/usr/local/texlive/2020/texmf-
+dist/fonts/enc/dvips/pl/plmi.enc}</usr/local/texlive/2020/texmf-dist/fonts/type
+1/public/pl/plmi10.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/p
+l/plr10.pfb></usr/local/texlive/2020/texmf-dist/fonts/type1/public/pl/plr7.pfb>
+
+Output written on american_pricing_bs.pdf (4 pages, 2762812 bytes).
 PDF statistics:
- 37 PDF objects out of 1000 (max. 8388607)
- 15 compressed objects within 1 object stream
+ 62 PDF objects out of 1000 (max. 8388607)
+ 22 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 36 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 76 words of extra memory for PDF output out of 10000 (max. 10000000)
 

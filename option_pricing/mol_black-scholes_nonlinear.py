@@ -356,7 +356,7 @@ class Solver(object):
                               "\nBoundary condition: V(S=0, t)=0"
                               "\nBoundary condition: V(S=$S_M)=S_M - K$"
                               "\n$S\in$(0, {:0.2f}) and $t\in$(0, {})"
-                              "\n$annual\tsigma=${}, $r=${}"
+                              "\nAnnual $\sigma=${}, $r=${}"
                   .format(self.equation_type, self.k, self.s_max, self.t_max, self.anual_sigma, self.r) + beta_info, size=10,
                   transform=ax.transAxes)
 
@@ -374,28 +374,29 @@ class Solver(object):
 
 
 if __name__ == '__main__':
-
+    s0 = 1500
+    t = 40
     s_max = 2350
     t_max = 0.9
 
-    k = 1400
+    k = 1600
     beta = 0.000002
     sigma = 0.25
     r = 0.02
 
-    p_european = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, anual_sigma=sigma, r=r, s_price=1500, t_days=40)
+    p_european = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, anual_sigma=sigma, r=r, s_price=s0, t_days=t)
     if p_european.pdeSolver(equation_type=non_linear):
         p_european.plot('Black-Scholes')
         option_price, asset_price, expiration_time_in_years = p_european.calculated_option_price
-        print('Option price: {}, asset price: {}, expiration time [{} years, {} days]'.format(option_price,
+        print('Option price: {:.3f}, asset price: {:.3f}, expiration time [{} years, {} days]'.format(option_price,
                                                                                           asset_price,
                                                                                           expiration_time_in_years,
                                                                                           expiration_time_in_years*days_in_year))
-    p_american = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, anual_sigma=sigma, r=r, s_price=1500, t_days=40)
+    p_american = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, anual_sigma=sigma, r=r, s_price=s0, t_days=t)
     if p_american.pdeSolverAmerican(equation_type=non_linear):
         p_american.plot('Black-Scholes')
         option_price, asset_price, expiration_time_in_years = p_american.calculated_option_price
-        print('Option price: {}, asset price: {}, expiration time [{} years, {} days]'.format(option_price,
+        print('Option price: {:.3f}, asset price: {:.3f}, expiration time [{} years, {} days]'.format(option_price,
                                                                                           asset_price,
                                                                                           expiration_time_in_years,
                                                                                           expiration_time_in_years*days_in_year))

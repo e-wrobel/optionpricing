@@ -1,23 +1,23 @@
 S0 = 1500
 t = 40 days
 
-k = 1400
+k = 1600
 beta = 0.000002
 sigma = 0.2
 r = 0.01
-European Option price: 121.4953708284369
-American Option price: 121.52850835009849
+European Option price: 1.324
+American Option price: 1.325
 
-k = 1400
+k = 1600
 beta = 0.000002
 sigma = 0.2
 r = 0.03
-European Option price: 125.9040062992248
-American Option price: 126.00269960614483
+European Option price: 1.671
+American Option price: 1.676
 
-k = 1400
+k = 1600
 beta = 0.000002
 sigma = 0.25
 r = 0.02
-European Option price: 123.98203537555335
-American Option price: 124.05305010684401
+European Option price: 3.395
+American Option price: 3.400

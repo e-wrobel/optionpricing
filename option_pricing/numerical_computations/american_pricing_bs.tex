@@ -36,32 +36,51 @@
 		\caption[American Option computation]{American Option computation}
 		\label{fig:Am}
 	\end{figure}
+
+	\begin{table}
+	\begin{tabular}{|c|c|}
+		\hline
+		European & American \\
+		\hline
+		\includegraphics[width=0.5\textwidth, height=40mm]{Black-Scholes_K1600.0_sigma0.2_r0.01_T0.9_linear_european.png}
+		& \includegraphics[width=0.5\textwidth, height=40mm]{Black-Scholes_K1600.0_sigma0.2_r0.01_T0.9_linear_american.png} \\
+		1.324
+		& 1.325 \\
+
+		\hline
+		\includegraphics[width=0.5\textwidth, height=40mm]{Black-Scholes_K1600.0_sigma0.2_r0.03_T0.9_linear_european.png}
+		& \includegraphics[width=0.5\textwidth, height=40mm]{Black-Scholes_K1600.0_sigma0.2_r0.03_T0.9_linear_american.png} \\
+		1.671 &  1.676\\
+		\hline
+		\includegraphics[width=0.5\textwidth, height=40mm]{Black-Scholes_K1600.0_sigma0.25_r0.02_T0.9_linear_european.png}
+		& \includegraphics[width=0.5\textwidth, height=40mm]{Black-Scholes_K1600.0_sigma0.25_r0.02_T0.9_linear_american.png} \\
+		3.395 & 3.400 \\ 
+		\hline
+	\end{tabular}
+	\caption{Option pricing for European and American style using  linear Black-Scholes model. $S_0=1500$ and $K=1600$}\label{tbl:linear}	
+		\end{table}
 	
-	\begin{figure}[H]
-		\centering
-		\includegraphics[width = 1.0\linewidth]{Black-Scholes_K1500.0_sigma0.02_r0.01_beta2e-06_T0.9_nonlinear_european.png}
-		\caption[European Option - non-linear BS]{European Option - non-linear BS}
-		\label{fig:E}
-	\end{figure}
+		\begin{table}
+		\begin{tabular}{|c|c|}
+		\hline
+		European & American \\
+		\hline
+		\includegraphics[width=0.5\textwidth, height=40mm]{Black-Scholes_K1600.0_sigma0.2_r0.01_beta2e-06_T0.9_nonlinear_european.png}
+		& \includegraphics[width=0.5\textwidth, height=40mm]{Black-Scholes_K1600.0_sigma0.2_r0.01_beta2e-06_T0.9_nonlinear_american.png} \\
+		1.392
+		& 1.392 \\
+		
+		\hline
+		\includegraphics[width=0.5\textwidth, height=40mm]{Black-Scholes_K1600.0_sigma0.2_r0.03_beta2e-06_T0.9_nonlinear_european.png}
+		& \includegraphics[width=0.5\textwidth, height=40mm]{Black-Scholes_K1600.0_sigma0.2_r0.03_beta2e-06_T0.9_nonlinear_american.png} \\
+		1.907 &  1.912\\
+		\hline
+		\includegraphics[width=0.5\textwidth, height=40mm]{Black-Scholes_K1600.0_sigma0.25_r0.02_beta2e-06_T0.9_nonlinear_european.png}
+		& \includegraphics[width=0.5\textwidth, height=40mm]{Black-Scholes_K1600.0_sigma0.25_r0.02_beta2e-06_T0.9_nonlinear_american.png} \\
+		3.570 & 3.575 \\ 
+		\hline
+	\end{tabular}
+	\caption{Option pricing for European and American style using  non-linear Black-Scholes model. $S_0=1500$ and $K=1600$}\label{tbl:nonlinear}	
+\end{table}
 
-	\begin{figure}[H]
-	\centering
-	\includegraphics[width = 1.0\linewidth]{Black-Scholes_K1500.0_sigma0.02_r0.01_beta1e-06_T0.9_nonlinear_american.png}
-	\caption[American Option - non-linear BS]{American Option - non-linear BS}
-	\label{fig:A}
-   \end{figure}
-
-  	\begin{figure}[H]
-  	\centering
-  	\includegraphics[width = 1.0\linewidth]{Black-Scholes_K1500.0_sigma0.02_r0.01_T0.9_linear_european.png}
-  	\caption[European Option - linear BS]{European Option - linear BS}
-  	\label{fig:E}
-  \end{figure}
-  
-  \begin{figure}[H]
-  	\centering
-  	\includegraphics[width = 1.0\linewidth]{Black-Scholes_K1500.0_sigma0.02_r0.01_T0.9_linear_american.png}
-  	\caption[American Option - linear BS]{American Option - linear BS}
-  	\label{fig:A}
-  \end{figure}
 \end{document}
