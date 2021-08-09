@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'Z\010.;option',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0coption.proto\"\xd0\x01\n\x0e\x43omputeRequest\x12\x10\n\x08maxPrice\x18\x01 \x01(\x01\x12\x12\n\nvolatility\x18\x02 \x01(\x01\x12\t\n\x01r\x18\x03 \x01(\x01\x12\x0c\n\x04tMax\x18\x04 \x01(\x01\x12\x13\n\x0bstrikePrice\x18\x05 \x01(\x01\x12\x17\n\x0f\x63\x61lculationType\x18\x06 \x01(\t\x12\x0c\n\x04\x62\x65ta\x18\x07 \x01(\x01\x12\x12\n\nstartPrice\x18\x08 \x01(\x01\x12\x18\n\x10maturityTimeDays\x18\t \x01(\x05\x12\x15\n\rexpectedPrice\x18\n \x01(\x01\"\x92\x01\n\x08UxtSlice\x12\x0f\n\x01U\x18\x01 \x03(\x0b\x32\x04.Uxt\x12\x1d\n\x15\x43\x61lculatedOptionprice\x18\x02 \x01(\x01\x12 \n\x18\x43\x61lculatedExpirationDays\x18\x03 \x01(\x05\x12\x1c\n\x14\x43\x61lculatedAssetPrice\x18\x04 \x01(\x01\x12\x16\n\x0e\x43\x61lculatedBeta\x18\x05 \x01(\x01\"\x11\n\x03Uxt\x12\n\n\x02Ut\x18\x01 \x03(\x01\x32=\n\rOptionPricing\x12,\n\x0c\x43omputePrice\x12\x0f.ComputeRequest\x1a\t.UxtSlice\"\x00\x42\nZ\x08.;optionb\x06proto3'
+  serialized_pb=b'\n\x0coption.proto\"\xe5\x01\n\x0e\x43omputeRequest\x12\x10\n\x08maxPrice\x18\x01 \x01(\x01\x12\x12\n\nvolatility\x18\x02 \x01(\x01\x12\t\n\x01r\x18\x03 \x01(\x01\x12\x0c\n\x04tMax\x18\x04 \x01(\x01\x12\x13\n\x0bstrikePrice\x18\x05 \x01(\x01\x12\x17\n\x0f\x63\x61lculationType\x18\x06 \x01(\t\x12\x0c\n\x04\x62\x65ta\x18\x07 \x01(\x01\x12\x12\n\nstartPrice\x18\x08 \x01(\x01\x12\x18\n\x10maturityTimeDays\x18\t \x01(\x05\x12\x15\n\rexpectedPrice\x18\n \x01(\x01\x12\x13\n\x0boptionStyle\x18\x0b \x01(\t\"\x92\x01\n\x08UxtSlice\x12\x0f\n\x01U\x18\x01 \x03(\x0b\x32\x04.Uxt\x12\x1d\n\x15\x43\x61lculatedOptionprice\x18\x02 \x01(\x01\x12 \n\x18\x43\x61lculatedExpirationDays\x18\x03 \x01(\x05\x12\x1c\n\x14\x43\x61lculatedAssetPrice\x18\x04 \x01(\x01\x12\x16\n\x0e\x43\x61lculatedBeta\x18\x05 \x01(\x01\"\x11\n\x03Uxt\x12\n\n\x02Ut\x18\x01 \x03(\x01\x32=\n\rOptionPricing\x12,\n\x0c\x43omputePrice\x12\x0f.ComputeRequest\x1a\t.UxtSlice\"\x00\x42\nZ\x08.;optionb\x06proto3'
 )
 
 
@@ -103,6 +103,13 @@ _COMPUTEREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='optionStyle', full_name='ComputeRequest.optionStyle', index=10,
+      number=11, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -116,7 +123,7 @@ _COMPUTEREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=17,
-  serialized_end=225,
+  serialized_end=246,
 )
 
 
@@ -175,8 +182,8 @@ _UXTSLICE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=228,
-  serialized_end=374,
+  serialized_start=249,
+  serialized_end=395,
 )
 
 
@@ -207,8 +214,8 @@ _UXT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=376,
-  serialized_end=393,
+  serialized_start=397,
+  serialized_end=414,
 )
 
 _UXTSLICE.fields_by_name['U'].message_type = _UXT
@@ -248,8 +255,8 @@ _OPTIONPRICING = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=395,
-  serialized_end=456,
+  serialized_start=416,
+  serialized_end=477,
   methods=[
   _descriptor.MethodDescriptor(
     name='ComputePrice',

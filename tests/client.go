@@ -1,16 +1,16 @@
-package compute
+package main
 
 import (
 	"context"
 	"fmt"
-	"google.golang.org/grpc"
 	"log"
+	"optionpricing/compute"
 	stubs "optionpricing/option"
+
+	"google.golang.org/grpc"
 )
 
-const numberOfSteps = 100
-
-func StartClient() {
+func main() {
 	// Client's code
 	log.Println("Client running ...")
 	conn, err := grpc.Dial("localhost:9000", grpc.WithInsecure())
@@ -23,15 +23,16 @@ func StartClient() {
 
 	incomingRequest := &stubs.ComputeRequest{
 		MaxPrice:         2350,
-		Volatility:       0.02,
-		R:                0.03,
+		Volatility:       0.2,
+		R:                0.01,
 		TMax:             0.9,
-		StrikePrice:      1650,
-		CalculationType:  nonlinear,
-		Beta:             0,
-		StartPrice:       1800,
-		MaturityTimeDays: 35,
-		ExpectedPrice: 120,
+		StrikePrice:      1500,
+		CalculationType:  compute.Linear,
+		Beta:             0.001,
+		StartPrice:       1400,
+		MaturityTimeDays: 40,
+		ExpectedPrice:    20,
+		OptionStyle:      compute.American,
 	}
 
 	calculatedPrice, calculatedDays, calculatedAssetPrice, calculatedBeta, err := executeRPC(client, incomingRequest)
@@ -58,7 +59,7 @@ func executeRPC(client stubs.OptionPricingClient, incomingRequest *stubs.Compute
 	calculatedBeta := UxtOut.CalculatedBeta
 
 	// Convert from struct to [][]
-	convertedU := FromStructToMatrix(UxtOut)
+	convertedU := compute.FromStructToMatrix(UxtOut)
 
 	if false {
 		fmt.Println("From client:")

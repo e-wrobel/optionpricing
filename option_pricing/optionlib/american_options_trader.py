@@ -18,6 +18,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 DAYS_IN_YEAR = 252
+american = "American"
 
 
 class AmericanOptions(object):
@@ -156,6 +157,7 @@ class AmericanOptions(object):
         request.startPrice = stock_open_prices[0]
         request.expectedPrice = option_price_from_boundary_conditions
         request.maturityTimeDays = T
+        request.optionStyle = american
         out = self.grpc_client.ComputePrice(request=request)
 
         calculated_option_dict = {

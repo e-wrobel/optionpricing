@@ -7,12 +7,14 @@ import (
 )
 
 const daysInYear = 252.0
+const numberOfSteps = 100
 
-func computeLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta, s0 float64, t int32) ([][]float64, float64, int32, float64, error) {
+func computeLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta, s0 float64, t int32, optionStyle string) ([][]float64, float64, int32, float64, error) {
 	isFound := false
 	var calculatedPrice float64
 	var calculatedDays int32
 	var calculatedAssetPrice float64
+	dailyVolatility := volatility / (math.Sqrt(float64(t)))
 
 	// Spatial differential
 	ds := maxPrice / spatialSteps
@@ -72,6 +74,13 @@ func computeLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta,
 
 			// Deriviated function in time domain
 			Uxt[sIndex][tIndex] = Uxt[sIndex][tIndex-1] + (1.0/6.0)*(k1+2.0*k2+2.0*k3+k4)
+			if optionStyle == American {
+				bsPrice := PriceBlackScholes(true, s, strikePrice, 1, dailyVolatility, r, 0.0)
+				if bsPrice >= Uxt[sIndex][tIndex] {
+					Uxt[sIndex][tIndex] = bsPrice
+				}
+			}
+
 			currentTimeYears := dt * float64(tIndex)
 
 			// Check option price for given asset price and maturity T
@@ -96,10 +105,11 @@ func computeLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta,
 	return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, nil
 }
 
-func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta, s0 float64, t int32) ([][]float64, float64, int32, float64, error) {
+func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta, s0 float64, t int32, optionStyle string) ([][]float64, float64, int32, float64, error) {
 	var calculatedPrice float64
 	var calculatedDays int32
 	var calculatedAssetPrice float64
+	dailyVolatility := volatility / (math.Sqrt(float64(t)))
 
 	// Spatial differential
 	ds := maxPrice / spatialSteps
@@ -159,6 +169,13 @@ func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, be
 
 			// Deriviated function in time domain
 			Uxt[sIndex][tIndex] = Uxt[sIndex][tIndex-1] + (1.0/6.0)*(k1+2.0*k2+2.0*k3+k4)
+			if optionStyle == American {
+				bsPrice := PriceBlackScholes(true, s, strikePrice, 1, dailyVolatility, r, 0.0)
+				if bsPrice > Uxt[sIndex][tIndex] {
+					Uxt[sIndex][tIndex] = bsPrice
+				}
+			}
+
 			currentTimeYears := dt * float64(tIndex)
 
 			// Check option price for given asset price and maturity T
@@ -198,7 +215,7 @@ func calibrateBetaForNonLinearBs(leftBeta, rightBeta float64, incommingRequest *
 		incommingRequest.Beta = middleBeta
 		Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, err = computeNonLinearBlackScholes(incommingRequest.MaxPrice,
 			incommingRequest.Volatility, incommingRequest.R, incommingRequest.TMax, incommingRequest.StrikePrice, incommingRequest.Beta,
-			incommingRequest.StartPrice, incommingRequest.MaturityTimeDays)
+			incommingRequest.StartPrice, incommingRequest.MaturityTimeDays, incommingRequest.OptionStyle)
 		if err != nil {
 			return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, middleBeta, fmt.Errorf("computation error: %v", err)
 		}

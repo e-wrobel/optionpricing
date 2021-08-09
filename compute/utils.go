@@ -3,8 +3,10 @@ package compute
 import stubs "optionpricing/option"
 
 const (
-	linear       = "Linear"
-	nonlinear    = "NonLinear"
+	Linear       = "Linear"
+	Nonlinear    = "NonLinear"
+	European     = "European"
+	American     = "American"
 	spatialSteps = 100
 )
 

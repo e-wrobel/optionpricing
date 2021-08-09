@@ -20,15 +20,15 @@ func (o *optionPricingServer) ComputePrice(ctx context.Context, input *stubs.Com
 	var err error
 	var U *stubs.UxtSlice
 
-	if input.CalculationType == linear {
-		Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, err = computeLinearBlackScholes(input.MaxPrice, input.Volatility, input.R, input.TMax, input.StrikePrice, input.Beta, input.StartPrice, input.MaturityTimeDays)
+	if input.CalculationType == Linear {
+		Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, err = computeLinearBlackScholes(input.MaxPrice, input.Volatility, input.R, input.TMax, input.StrikePrice, input.Beta, input.StartPrice, input.MaturityTimeDays, input.OptionStyle)
 		if err != nil {
 			return U, fmt.Errorf("error received from computeLinearBlackScholes: %v", err)
 		}
 		U = FromMatrixToStruct(Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, 0)
-	} else if input.CalculationType == nonlinear {
-		leftBeta := -0.001
-		rightBeta := 0.05
+	} else if input.CalculationType == Nonlinear {
+		leftBeta := -0.0005
+		rightBeta := 0.0005
 		Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, beta, err = calibrateBetaForNonLinearBs(leftBeta, rightBeta, input)
 		if err != nil {
 			return U, fmt.Errorf("error received from calibrateBetaForNonLinearBs: %v", err)

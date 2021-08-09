@@ -19,6 +19,7 @@ message ComputeRequest {
   double startPrice = 8;
   int32 maturityTimeDays = 9;
   double expectedPrice = 10;
+  string optionStyle = 11;
 }
 
 // The response message containing the greetings

@@ -33,6 +33,7 @@ OPTION = 'option'
 ASSET = 'asset'
 DAYS_IN_YEAR = 252
 TABLE_NAME_FILE = 'OPTIONS_SUMMARY'
+european = "European"
 
 
 class Stooq(StooqBase):
@@ -186,6 +187,7 @@ class Stooq(StooqBase):
         request.startPrice = stock_price
         request.expectedPrice = option_price_from_boundary_condition
         request.maturityTimeDays = T
+        request.optionStyle = european
 
         out = self.grpc_client.ComputePrice(request=request)
 
