@@ -21,3 +21,11 @@ sigma = 0.25
 r = 0.02
 European Option price: 3.570
 American Option price: 3.575
+
+k = 1600
+beta = 0.000002
+sigma = 0.25
+r = 0.02
+t = 180
+European Option price: 77.931
+American Option price: 80.389

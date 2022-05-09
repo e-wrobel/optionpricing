@@ -24,7 +24,7 @@ func computeLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta,
 
 	// Time differential
 	dt := ds2 / (float64(spatialSteps-1)*volatility2 + 0.5*r) / maxPrice2
-	dt = 0.0005
+	dt = 0.05
 	spatialSize := int(maxPrice / ds)
 	timeSize := int(tMax / dt)
 
@@ -106,6 +106,7 @@ func computeLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta,
 }
 
 func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta, s0 float64, t int32, optionStyle string) ([][]float64, float64, int32, float64, error) {
+	isFound := false
 	var calculatedPrice float64
 	var calculatedDays int32
 	var calculatedAssetPrice float64
@@ -119,7 +120,7 @@ func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, be
 
 	// Time differential
 	dt := ds2 / (float64(spatialSteps-1)*volatility2 + 0.5*r) / maxPrice2
-	dt = 0.0005
+	dt = 0.005
 	spatialSize := int(maxPrice / ds)
 	timeSize := int(tMax / dt)
 
@@ -179,7 +180,8 @@ func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, be
 			currentTimeYears := dt * float64(tIndex)
 
 			// Check option price for given asset price and maturity T
-			if currentTimeYears >= float64(t)/daysInYear && s >= s0 {
+			if currentTimeYears >= float64(t)/daysInYear && s >= s0 && !isFound {
+				isFound = true
 				calculatedPrice = Uxt[sIndex][tIndex]
 				calculatedDays = int32(currentTimeYears * daysInYear)
 				calculatedAssetPrice = s
@@ -193,13 +195,17 @@ func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, be
 			}
 		}
 
-		//Insert boundary conditions / Runge-Kutta at s = 0, and s = s_max
+		// Insert boundary conditions / Runge-Kutta at s = 0, and s = s_max
 		Uxt[0][tIndex] = 0
 		Uxt[spatialSize-1][tIndex] = priceSlice[spatialSize-1] - strikePrice
 
 	}
 
-	return Uxt, 0, 0, 0, fmt.Errorf("unable to find option parameters")
+	if !isFound {
+		return Uxt, 0, 0, 0, fmt.Errorf("unable to find option parameters")
+	}
+
+	return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, nil
 }
 
 func calibrateBetaForNonLinearBs(leftBeta, rightBeta float64, incommingRequest *stubs.ComputeRequest) ([][]float64, float64, int32, float64, float64, error) {

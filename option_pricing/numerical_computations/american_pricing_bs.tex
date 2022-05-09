@@ -1,6 +1,14 @@
 % !TeX document-id = {d8a08665-68b2-4c28-8b7c-81fa3895c963}
 % !TEX TS-program = pdflatexmk
 \documentclass[10pt,a4paper]{article}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+
 \usepackage[english]{babel}
 \usepackage[latin1]{inputenc}
 \usepackage{lipsum}
@@ -13,6 +21,27 @@
 \usepackage{cite}
 \usepackage{listings}
 \usepackage{float}
+\usepackage{listings}
+\lstdefinestyle{mystyle}{
+	backgroundcolor=\color{backcolour},   
+	commentstyle=\color{codegreen},
+	keywordstyle=\color{magenta},
+	numberstyle=\tiny\color{codegray},
+	stringstyle=\color{codepurple},
+	basicstyle=\ttfamily\footnotesize,
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	numbers=left,                    
+	numbersep=5pt,                  
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2
+}
+
+\lstset{style=mystyle}
 \selectlanguage{english}
 \begin{document}
 	
@@ -37,6 +66,42 @@
 		\label{fig:Am}
 	\end{figure}
 
+Assumptions for numerical algorithm: $S \in (0, K)$ with dS step, $t \in (0, N)$ with dt step.
+
+European Option algorithm:
+\begin{lstlisting}[language=Python]
+For S in (0, k*dS):
+	1. Calculate V[k*dS, 0] -> Initial condition
+	
+For t in (1, n*dt)
+	For S in (0, (k-1)*dS):
+		2. Calculate V1 price at [k*dS, n*dt] using numerical 
+		methods (Runge-Kutta)
+	
+		3. Option price = max(V, 0)
+	
+	4. Set boundary conditions for V[0, n*dt] and for V[K, n*dt] 
+\end{lstlisting}
+
+American Option algorithm:
+\begin{lstlisting}[language=Python]
+For S in (0, k*dS):
+	1. Calculate V[k*dS, 0] -> Initial condition
+		
+For t in (1, n*dt):
+	For S in (0, (k-1)*dS):
+		2. Calculate V1 price at [k*dS, n*dt] using numerical 
+		methods (Runge-Kutta)
+		
+		3. Calculate V2 price using Black-Scholes formula 
+		(at S = k*dS, and expiry time T = dt)
+		
+		4. Choose higher price: V = max(V1, V2)
+		
+		5. Option price = max(V, 0)
+
+	6. Set boundary conditions for V[0, n*dt] and for V[K, n*dt] 
+\end{lstlisting}
 	\begin{table}
 	\begin{tabular}{|c|c|}
 		\hline

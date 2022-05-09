@@ -3,12 +3,12 @@ import ssl
 from datetime import date
 
 import grpc
-
 from option_pricing.black_scholes_option_pricing import Option
 import numpy as np
 from yahoo_fin import stock_info
 import option_pricing.grpc_option.option_pb2_grpc as stub
 import option_pricing.grpc_option.option_pb2 as message
+import pandas as pd
 
 ssl._create_default_https_context = ssl._create_unverified_context
 import matplotlib
@@ -19,12 +19,14 @@ import matplotlib.pyplot as plt
 
 DAYS_IN_YEAR = 252
 american = "American"
+european = "European"
 
 
 class AmericanOptions(object):
 
-    def __init__(self, stock: str, option: str):
+    def __init__(self, stock: str, option: str, r: float):
         self.stock = stock
+        self.r = r
         self.option = option
         self.stock_data = None
         self.option_data = None
@@ -38,7 +40,6 @@ class AmericanOptions(object):
         :param path: path for storing stock/option data
         """
 
-        r = 0.01
         self.option_data = stock_info.get_data(self.option)
         option_values = self.option_data.open
 
@@ -46,6 +47,7 @@ class AmericanOptions(object):
         expiration_date_human_readable = '20{}-{}-{}'.format(expiration_date[:2], expiration_date[2:4],
                                                              expiration_date[4:])
         option_type = 'Call' if self.option[10] == 'C' else 'Put'
+
         # Because we've got some missing points
         option_mask = np.isfinite(option_values)
 
@@ -60,6 +62,8 @@ class AmericanOptions(object):
             if start_time is None:
                 start_time = date
             end_option_date = date
+        if start_time == end_option_date:
+            raise Exception("Start time end end time are the same!")
 
         self.stock_data = stock_info.get_data(self.stock, start_date=start_time, end_date=end_option_date)
         stock_values = self.stock_data.open
@@ -70,17 +74,24 @@ class AmericanOptions(object):
             stock_open_prices.append(price)
 
         T = self._days_between_dates(start_time, end_option_date)
+        t_for_stock = self._days_between_dates(start_time, end_stock_date)
+
+        # Sometimes we are getting not enough data for Options
+        if T > t_for_stock:
+            T = t_for_stock
+
         volatility = self._calculate_volatility(stock_open_prices, T)
         option_price_from_boundary_conditions = max(stock_open_prices[-1] - K, 0)
-        bs_calculus = Option(stock_open_prices[0], K, T, r, volatility)
+        bs_calculus = Option(stock_open_prices[0], K, T, self.r, volatility)
         bs_price = bs_calculus.euro_vanilla_call()
 
-        out = self.calculate_nonlinear_bs(K, T, option_price_from_boundary_conditions, r, stock_open_prices, volatility)
+        out = self.calculate_nonlinear_bs(K, T, option_price_from_boundary_conditions, stock_open_prices, volatility)
         calculated_option_price = out['calculated_option_price']
         calculated_beta = out['calculated_beta']
+        calculated_values = out['calculated_price_3d']
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 10), facecolor='w')
 
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6), facecolor='w')
-
+        # Option market data
         ax1.grid()
         ax1.set(xlabel='Time (days)', ylabel='Price (usd)', title='{} Market data'.format(self.option.upper()))
 
@@ -99,28 +110,27 @@ class AmericanOptions(object):
                                          calculated_option_price,
                                          calculated_beta))
 
+        # Those prices are computed for time from T -> t0 that is why we need to reverse!
+        calculated_option_prices_for_given_s0 = calculated_values.U[26].Ut
+        calculated_option_prices_for_given_s0 = calculated_option_prices_for_given_s0[
+                                                ::int(len(calculated_option_prices_for_given_s0) / len(option_values))]
+        calculated_option_prices_for_given_s0 = calculated_option_prices_for_given_s0[::-1]
+
         ax1.plot(start_time, option_values[0], marker='o', markersize=6, color="red",
                  label='V(t={}): {:.2f}'.format(start_time, option_values[0]))
         ax1.plot(end_option_date, option_values[-1], marker='o', markersize=6, color="green",
-                 label='V(t={}): {:.2f}'.format(end_option_date, option_values[-1]))
+                 label='V(t={}): {:.2f}'.format(end_option_date, option_values[option_mask][-1]))
 
-        # Set up grid, legend, and limits
         ax1.legend(loc='upper left', shadow=False)
         ax1.legend(frameon=True)
-
         every_xaxis_tick = int(0.1 * len(option_values.keys())) if len(option_values) > 10 else 1
         ax1.xaxis.set_ticks(option_values.keys()[::every_xaxis_tick])
         ax1.set_xticklabels(option_values.keys()[::every_xaxis_tick], minor=False, rotation=30)
 
+        # Stock market data
         ax2.grid()
-        ax2.set(xlabel='Time (days)', ylabel='Price (usd)',
-                title="{} Market data".format(self.stock.upper()))
-
+        ax2.set(xlabel='Time (days)', ylabel='Price (usd)', title='{} Market data'.format(self.stock.upper()))
         ax2.plot(stock_values, lw=2, label="K: {}".format(K))
-
-        # Strike price:
-        # ax2.axhline(y=K, color='c', linestyle='--', label='K: {}'.format(K))
-
         ax2.plot(start_time, stock_values[0], marker='o', markersize=6, color="red",
                  label='S(t={}): {:.2f}'.format(start_time, stock_values[0]))
         ax2.plot(end_stock_date, stock_values[-1], marker='o', markersize=6, color="green",
@@ -130,43 +140,60 @@ class AmericanOptions(object):
         ax2.legend(frameon=True)
         ax2.xaxis.set_ticks(stock_values.keys()[::every_xaxis_tick])
         ax2.set_xticklabels(stock_values.keys()[::every_xaxis_tick], minor=False, rotation=30)
-        fig.tight_layout()
 
+        # Option computed data
+        ax3.grid()
+        ax3.set(xlabel='Time (days)', ylabel='Calculated price (usd)',
+                title="{} Calculated data".format(self.option.upper()))
+        calc_options = pd.Series(calculated_option_prices_for_given_s0, index=option_mask.index)
+        ax3.xaxis.set_ticks(stock_values.keys()[::every_xaxis_tick])
+        ax3.set_xticklabels(stock_values.keys()[::every_xaxis_tick], minor=False, rotation=30)
+        ax3.plot(calc_options, lw=2, label="K: {}".format(K))
+
+        # Market data and calculated data together
+        ax4.grid()
+        ax4.set(xlabel='Time (days)', ylabel='Calculated price (usd)',
+                title="{} Calculated data".format(self.option.upper()))
+        ax4.xaxis.set_ticks(option_values.keys()[::every_xaxis_tick])
+        ax4.set_xticklabels(option_values.keys()[::every_xaxis_tick], minor=False, rotation=30)
+        ax4.plot(calc_options, lw=2, label="K: {}".format(K), color="black")
+        ax4.plot(option_values[option_mask], zorder=2, lw=2, color="blue")
+        fig.tight_layout()
         plt.savefig("{}/{}.png".format(path, self.option))
 
-    def calculate_nonlinear_bs(self, K, T, option_price_from_boundary_conditions, r, stock_open_prices, volatility):
+    def calculate_nonlinear_bs(self, K, T, option_price_from_boundary_conditions, stock_open_prices, volatility):
         """
         Make grpc connection and calculate
         :param K:
         :param T:
         :param option_price_from_boundary_conditions:
-        :param r:
         :param stock_open_prices:
         :param volatility:
         :return:
         """
         # Add grpc call here
         request = message.ComputeRequest()
-        request.maxPrice = 2350
+        request.maxPrice = 600
         request.volatility = volatility
-        request.r = r
-        request.tMax = 0.9
+        request.r = self.r
+        request.tMax = 0.5
         request.strikePrice = K
         request.calculationType = 'NonLinear'
         request.beta = 0.0
         request.startPrice = stock_open_prices[0]
         request.expectedPrice = option_price_from_boundary_conditions
         request.maturityTimeDays = T
-        request.optionStyle = american
+        request.optionStyle = european
         out = self.grpc_client.ComputePrice(request=request)
 
         calculated_option_dict = {
+            "calculated_price_3d": out,
             "calculated_option_price": out.CalculatedOptionprice,
             "calculated_expiration_days": out.CalculatedExpirationDays,
             "calculated_asset_price": out.CalculatedAssetPrice,
             "calculated_beta": out.CalculatedBeta,
             "volatility": volatility,
-            "r": r,
+            "r": self.r,
             "T": T,
         }
 
@@ -224,17 +251,17 @@ if __name__ == '__main__':
     path = "/Users/marcinwroblewski/GolandProjects/optionpricing/option_pricing/option_data/American"
 
     # # Netflix
-    stock = "nflx"
-
-    with open('{}/{}'.format(path, 'netflix_options.txt')) as f:
-        options = [x.rstrip() for x in f]
-
-    for option in options:
-        try:
-            a = AmericanOptions(stock=stock, option=option)
-            a.get_data(path=path)
-        except Exception as e:
-            print('Unable to make calculation for option: {}, error: {}'.format(option, e))
+    # stock = "nflx"
+    #
+    # with open('{}/{}'.format(path, 'netflix_options.txt')) as f:
+    #     options = [x.rstrip() for x in f]
+    #
+    # for option in options:
+    #     try:
+    #         a = AmericanOptions(stock=stock, option=option, r=0.01)
+    #         a.get_data(path=path)
+    #     except Exception as e:
+    #         print('Unable to make calculation for option: {}, error: {}'.format(option, e))
 
     # Apple
     stock = "aapl"
@@ -244,19 +271,19 @@ if __name__ == '__main__':
 
     for option in options:
         try:
-            a = AmericanOptions(stock=stock, option=option)
+            a = AmericanOptions(stock=stock, option=option, r=0.01)
             a.get_data(path=path)
         except Exception as e:
             print('Unable to make calculation for option: {}, error: {}'.format(option, e))
 
-    # Tesla
-    stock = "tsla"
-    with open('{}/{}'.format(path, 'tsla_options.txt')) as f:
-        options = [x.rstrip() for x in f]
-
-    for option in options:
-        try:
-            a = AmericanOptions(stock=stock, option=option)
-            a.get_data(path=path)
-        except Exception as e:
-            print('Unable to make calculation for option: {}, error: {}'.format(option, e))
+    # # Tesla
+    # stock = "tsla"
+    # with open('{}/{}'.format(path, 'tsla_options.txt')) as f:
+    #     options = [x.rstrip() for x in f]
+    #
+    # for option in options:
+    #     try:
+    #         a = AmericanOptions(stock=stock, option=option)
+    #         a.get_data(path=path)
+    #     except Exception as e:
+    #         print('Unable to make calculation for option: {}, error: {}'.format(option, e))

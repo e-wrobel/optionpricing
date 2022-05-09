@@ -8,6 +8,8 @@ import matplotlib
 matplotlib.use('Agg')
 from matplotlib import ticker
 import matplotlib.pyplot as plt
+
+plt.rcParams.update({'font.size': 12})
 import numpy as np
 from scipy.stats import norm
 import seaborn as sns
@@ -233,21 +235,23 @@ class Stooq(StooqBase):
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6), facecolor='w')
 
         ax1.grid()
-        ax1.set(xlabel='Time (days)', ylabel='Price (pln)', title='{} Market data'.format(option_name))
+        ax1.set(ylabel='Price (pln)')
+        ax1.set(title='{}'.format(option_name))
 
         # Find Gaussian distribution parameters
         mean, standard_deviation = norm.fit(option_openings)
-        ax1.plot(dates, option_openings, lw=2, label="\n$\sigma$: {:.2f}, "
-                                                     "\nr: {:.2f}, "
-                                                     "\nK: {:.2f}, "
-                                                     "\nMax(S(t=T) - K, 0): {:.2f}, "
-                                                     "\nCalculated B-S price: {:.2f}, "
-                                                     "\nT: {:.0f} days, "
-                                                     "\nCalculated Non-linear B-S price: {:.2f}, "
-                                                     "\nCalculated beta: {:.8f}".
-                 format(volatility, r, K, option_price_from_bondary_condition, bs_price, T,
-                        calculated_option_dict["calculated_option_price"],
-                        calculated_option_dict["calculated_beta"]))
+        ax1.plot(dates, option_openings, lw=2)
+        # ax1.plot(dates, option_openings, lw=2, label="\n$\sigma$: {:.2f}, "
+        #                                              "\nr: {:.2f}, "
+        #                                              "\nK: {:.2f}, "
+        #                                              "\nMax(S(t=T) - K, 0): {:.2f}, "
+        #                                              "\nCalculated B-S price: {:.2f}, "
+        #                                              "\nT: {:.0f} days, "
+        #                                              "\nCalculated Non-linear B-S price: {:.2f}, "
+        #                                              "\nCalculated beta: {:.8f}".
+        #          format(volatility, r, K, option_price_from_bondary_condition, bs_price, T,
+        #                 calculated_option_dict["calculated_option_price"],
+        #                 calculated_option_dict["calculated_beta"]))
 
         ax1.plot(dates[0], option_price_from_the_first_day, marker='o', markersize=6, color="red",
                  label='V(t={}): {:.2f}'.format(dates[0], option_price_from_the_first_day))
@@ -255,27 +259,27 @@ class Stooq(StooqBase):
                  label='V(t={}): {:.2f}'.format(dates[-1], option_openings[-1]))
 
         # Set up grid, legend, and limits
-        ax1.legend(loc='upper left', shadow=False)
-        ax1.legend(frameon=True)
+        # ax1.legend(loc='upper left', shadow=False)
+        # ax1.legend(frameon=True)
 
         # # For x (time) axis
         every_xaxis_tick = int(0.1 * len(dates)) if len(dates) > 10 else 1
-        ax1.xaxis.set_ticks(dates[::every_xaxis_tick])
-        ax1.set_xticklabels(dates[::every_xaxis_tick], minor=False, rotation=30)
-
+        ax1.xaxis.set_ticks([])
+        # ax1.set_xticklabels(dates[::every_xaxis_tick], minor=False, rotation=30)
+        ax1.set_xticklabels([])
         ax2.grid()
-        ax2.set(xlabel='Time (days)', ylabel='Price (pln)',
-                title="{} Market data".format('WIG20'))
+
+        ax2.set(ylabel='Price (pln)', title="{}".format('WIG20'))
 
         ax2.plot(dates, asset_openings, lw=2)
         ax2.plot(dates[0], asset_openings[0], marker='o', markersize=6, color="red",
                  label='S(t={}): {:.2f}'.format(dates[0], asset_openings[0]))
         ax2.plot(len(dates) - 1, asset_openings[-1], marker='o', markersize=6, color="green",
                  label='S(t={}): {:.2f}'.format(dates[-1], asset_openings[-1]))
-        ax2.axhline(y=K, color='c', linestyle='--', label='K: {:.2f}'.format(K))
-        ax2.legend(loc='lower right', shadow=True)
-        ax2.legend(frameon=True)
-        ax2.xaxis.set_ticks(dates[::every_xaxis_tick])
+        # ax2.axhline(y=K, color='c', linestyle='--', label='K: {:.2f}'.format(K))
+        # ax2.legend(loc='lower right', shadow=True)
+        # ax2.legend(frameon=True)
+        ax2.xaxis.set_ticks([])
         ax2.set_xticklabels(dates[::every_xaxis_tick], minor=False, rotation=30)
         fig.tight_layout()
 
@@ -305,6 +309,41 @@ class Stooq(StooqBase):
         table = ax.table(cellText=data, colLabels=column_labels, loc='center', cellLoc='center')
         table.set_fontsize(14)
         table.scale(1, 2)
+
+        # print table in latex format
+
+        head = []
+        for row in column_labels:
+            head.append(str(row))
+            head.append('&')
+        head = head[:-1]
+        head.append('{}'.format('\\\\'))
+        line = ' '.join(head)
+        print('{}'.format(line))
+        beginning = '''
+\\begin{table}[ht]
+\\caption{Nonlinear Model Results}
+\\centering
+\\begin{tabular}{c c c c c c c c}
+\\hline\hline
+         '''
+        print(beginning)
+        for row in data:
+            col = []
+            for column in row:
+                col.append(str(column))
+                col.append('&')
+            col = col[:-1]
+            col.append('{}'.format('\\\\'))
+            line = ' '.join(col)
+            print('{}'.format(line))
+        end = '''
+\hline
+\end{tabular}
+\label{table:nonlin}
+\end{table}        
+        '''
+        print(end)
 
         # display table
         fig.tight_layout()
@@ -362,7 +401,7 @@ class Stooq(StooqBase):
         ax1.scatter(beta_data, sigma_data)
 
         ax1.set(xlabel='Beta', ylabel='Sigma',
-               title='Beta vs Sigma relation from calculated data')
+                title='Beta vs Sigma relation from calculated data')
 
         ax2.grid()
         ax2.hist(beta_data, density=True, bins=len(beta_data))
@@ -372,5 +411,3 @@ class Stooq(StooqBase):
         fig.savefig("{}/{}".format(plot_directory, 'beta_vs_sigma.png'))
         fig.clear()
         plt.close(fig)
-
-
