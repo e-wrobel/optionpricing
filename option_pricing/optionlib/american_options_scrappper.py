@@ -46,10 +46,14 @@ class AmericanOptions(object):
 
         K = float('{}.{}'.format(self.option[13:16], self.option[16:]))
 
+        for date, value in option_values.iterrows():
+            print("Date: {}, Open: {}".format(date, value['Open']))
+
         stock_data = yf.Ticker(self.stock)
         stock_values = stock_data.history(start=start_date)
-        for stock_value in stock_values:
-            print(stock_value)
+        for date, value in stock_values.iterrows():
+            print("Date: {}, Open: {}".format(date, value['Open']))
+
         T = self._days_between_dates(start_date, expiration_date)
 
 
