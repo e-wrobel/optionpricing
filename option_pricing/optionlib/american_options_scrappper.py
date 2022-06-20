@@ -162,3 +162,16 @@ if __name__ == '__main__':
             a.put_data_to_db()
         except Exception as e:
             print('Unable to make calculation for option: {}, error: {}'.format(option, e))
+
+    stock = "gdrx"
+    path = "/Users/marcinwroblewski/PycharmProjects/optionpricing/option_pricing/option_data/American"
+    with open('{}/{}'.format(path, 'goodrx_options.txt')) as f:
+        options = [x.rstrip() for x in f]
+
+    for option in options:
+        try:
+            a = AmericanOptions(stock_name=stock, option_name=option, r=0.01, database=db)
+            a.get_data()
+            a.put_data_to_db()
+        except Exception as e:
+            print('Unable to make calculation for option: {}, error: {}'.format(option, e))
