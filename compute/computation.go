@@ -7,12 +7,12 @@ import (
 )
 
 const daysInYear = 252.0
-const numberOfSteps = 100
+const numberOfSteps = 1000
 
-func computeLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta, s0 float64, t int32, optionStyle string) ([][]float64, float64, int32, float64, error) {
+func computeLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta, s0 float64, t int32, optionStyle string) ([][]float64, float64, int32, float64, int32, error) {
 	isFound := false
 	var calculatedPrice float64
-	var calculatedDays int32
+	var calculatedDays, priceIndexForS0 int32
 	var calculatedAssetPrice float64
 	dailyVolatility := volatility / (math.Sqrt(float64(t)))
 
@@ -24,7 +24,7 @@ func computeLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta,
 
 	// Time differential
 	dt := ds2 / (float64(spatialSteps-1)*volatility2 + 0.5*r) / maxPrice2
-	dt = 0.05
+	dt = 0.005
 	spatialSize := int(maxPrice / ds)
 	timeSize := int(tMax / dt)
 
@@ -89,6 +89,7 @@ func computeLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta,
 				calculatedPrice = Uxt[sIndex][tIndex]
 				calculatedDays = int32(currentTimeYears * daysInYear)
 				calculatedAssetPrice = s
+				priceIndexForS0 = int32(sIndex)
 			}
 		}
 
@@ -99,16 +100,16 @@ func computeLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta,
 	}
 
 	if !isFound {
-		return Uxt, 0, 0, 0, fmt.Errorf("unable to find option parameters")
+		return Uxt, 0, 0, 0, 0, fmt.Errorf("unable to find option parameters")
 	}
 
-	return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, nil
+	return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, priceIndexForS0, nil
 }
 
-func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta, s0 float64, t int32, optionStyle string) ([][]float64, float64, int32, float64, error) {
+func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta, s0 float64, t int32, optionStyle string) ([][]float64, float64, int32, float64, int32, error) {
 	isFound := false
 	var calculatedPrice float64
-	var calculatedDays int32
+	var calculatedDays, priceIndexForS0 int32
 	var calculatedAssetPrice float64
 	dailyVolatility := volatility / (math.Sqrt(float64(t)))
 
@@ -162,13 +163,13 @@ func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, be
 
 			R := R1 + R2 + R3
 
-			// Runge-Kutta4 coeficients
+			// Runge-Kutta4 coefficients
 			k1 := dt * R
 			k2 := dt * (R + 0.5*k1)
 			k3 := dt * (R + 0.5*k2)
 			k4 := dt * (R + k3)
 
-			// Deriviated function in time domain
+			// Derived function in time domain
 			Uxt[sIndex][tIndex] = Uxt[sIndex][tIndex-1] + (1.0/6.0)*(k1+2.0*k2+2.0*k3+k4)
 			if optionStyle == American {
 				bsPrice := PriceBlackScholes(true, s, strikePrice, 1, dailyVolatility, r, 0.0)
@@ -185,13 +186,14 @@ func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, be
 				calculatedPrice = Uxt[sIndex][tIndex]
 				calculatedDays = int32(currentTimeYears * daysInYear)
 				calculatedAssetPrice = s
+				priceIndexForS0 = int32(sIndex)
 
 				if math.IsNaN(calculatedPrice) {
 					fmt.Printf("CalculatedPris is NAN\n")
-					return Uxt, 0, 0, 0, fmt.Errorf("calculatedPrice is NAN")
+					return Uxt, 0, 0, 0, 0, fmt.Errorf("calculatedPrice is NAN")
 				}
 
-				return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, nil
+				return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, priceIndexForS0, nil
 			}
 		}
 
@@ -202,15 +204,15 @@ func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, be
 	}
 
 	if !isFound {
-		return Uxt, 0, 0, 0, fmt.Errorf("unable to find option parameters")
+		return Uxt, 0, 0, 0, 0, fmt.Errorf("unable to find option parameters")
 	}
 
-	return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, nil
+	return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, priceIndexForS0, nil
 }
 
-func calibrateBetaForNonLinearBs(leftBeta, rightBeta float64, incommingRequest *stubs.ComputeRequest) ([][]float64, float64, int32, float64, float64, error) {
+func calibrateBetaForNonLinearBs(leftBeta, rightBeta float64, incommingRequest *stubs.ComputeRequest) ([][]float64, float64, int32, float64, float64, int32, error) {
 	var calculatedPrice, calculatedAssetPrice, middleBeta float64
-	var calculatedDays int32
+	var calculatedDays, priceIndexForS0 int32
 	var Uxt [][]float64
 	var err error
 	isFound := false
@@ -219,13 +221,13 @@ func calibrateBetaForNonLinearBs(leftBeta, rightBeta float64, incommingRequest *
 	for leftBeta < rightBeta {
 		middleBeta = (leftBeta + rightBeta) / 2
 		incommingRequest.Beta = middleBeta
-		Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, err = computeNonLinearBlackScholes(incommingRequest.MaxPrice,
+		Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, priceIndexForS0, err = computeNonLinearBlackScholes(incommingRequest.MaxPrice,
 			incommingRequest.Volatility, incommingRequest.R, incommingRequest.TMax, incommingRequest.StrikePrice, incommingRequest.Beta,
 			incommingRequest.StartPrice, incommingRequest.MaturityTimeDays, incommingRequest.OptionStyle)
 		if err != nil {
-			return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, middleBeta, fmt.Errorf("computation error: %v", err)
+			return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, middleBeta, 0, fmt.Errorf("computation error: %v", err)
 		}
-		if int32(calculatedPrice) == int32(incommingRequest.ExpectedPrice) {
+		if int32(10*calculatedPrice) == int32(10*incommingRequest.ExpectedPrice) {
 			isFound = true
 			break
 		}
@@ -243,9 +245,9 @@ func calibrateBetaForNonLinearBs(leftBeta, rightBeta float64, incommingRequest *
 	}
 
 	if !isFound {
-		return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, middleBeta, fmt.Errorf("unable to find the right value")
+		return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, middleBeta, 0, fmt.Errorf("unable to find the right value in non-linear calculus")
 	}
 
 	fmt.Printf("Number of steps: %v\n", i)
-	return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, middleBeta, nil
+	return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, middleBeta, priceIndexForS0, nil
 }

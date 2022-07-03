@@ -29,6 +29,7 @@ message UxtSlice {
   int32 CalculatedExpirationDays = 3;
   double CalculatedAssetPrice = 4;
   double CalculatedBeta = 5;
+  int32 PriceIndex = 6;
 }
 
 message Uxt {

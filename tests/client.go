@@ -22,34 +22,34 @@ func main() {
 	client := stubs.NewOptionPricingClient(conn)
 
 	incomingRequest := &stubs.ComputeRequest{
-		MaxPrice:         2350,
+		MaxPrice:         200,
 		Volatility:       0.2,
 		R:                0.01,
 		TMax:             0.9,
-		StrikePrice:      1500,
-		CalculationType:  compute.Linear,
-		Beta:             0.001,
-		StartPrice:       1400,
-		MaturityTimeDays: 40,
-		ExpectedPrice:    20,
-		OptionStyle:      compute.American,
+		StrikePrice:      138,
+		CalculationType:  compute.Nonlinear,
+		Beta:             0.0,
+		StartPrice:       149,
+		MaturityTimeDays: 18,
+		ExpectedPrice:    8.1,
+		OptionStyle:      compute.European,
 	}
 
-	calculatedPrice, calculatedDays, calculatedAssetPrice, calculatedBeta, err := executeRPC(client, incomingRequest)
+	calculatedPrice, calculatedDays, calculatedAssetPrice, calculatedBeta, priceIndexForS0, err := executeRPC(client, incomingRequest)
 	if err != nil {
 		fmt.Printf("Unable to find beta!: %v", err)
 		fmt.Printf("The best fit is for data below:\n")
 	}
 
-	fmt.Printf("calculatedPrice: %f, calculatedDays: %d, calculatedAssetPrice: %f, calculatedBeta: %f", calculatedPrice, calculatedDays, calculatedAssetPrice, calculatedBeta)
+	fmt.Printf("calculatedPrice: %f, calculatedDays: %d, calculatedAssetPrice: %f, calculatedBeta: %f, priceIndex: %v", calculatedPrice, calculatedDays, calculatedAssetPrice, calculatedBeta, priceIndexForS0)
 }
 
-func executeRPC(client stubs.OptionPricingClient, incomingRequest *stubs.ComputeRequest) (float64, int32, float64, float64, error) {
+func executeRPC(client stubs.OptionPricingClient, incomingRequest *stubs.ComputeRequest) (float64, int32, float64, float64, int32, error) {
 	ctx := context.Background()
 
 	UxtOut, err := client.ComputePrice(ctx, incomingRequest)
 	if err != nil {
-		return 0, 0, 0, 0, fmt.Errorf("unable to make GRPC request: %v", err)
+		return 0, 0, 0, 0, 0, fmt.Errorf("unable to make GRPC request: %v", err)
 
 	}
 
@@ -57,6 +57,7 @@ func executeRPC(client stubs.OptionPricingClient, incomingRequest *stubs.Compute
 	calculatedDays := UxtOut.CalculatedExpirationDays
 	calculatedAssetPrice := UxtOut.CalculatedAssetPrice
 	calculatedBeta := UxtOut.CalculatedBeta
+	priceIndexForS0 := UxtOut.PriceIndex
 
 	// Convert from struct to [][]
 	convertedU := compute.FromStructToMatrix(UxtOut)
@@ -66,5 +67,5 @@ func executeRPC(client stubs.OptionPricingClient, incomingRequest *stubs.Compute
 		fmt.Println(convertedU)
 	}
 
-	return calculatedPrice, calculatedDays, calculatedAssetPrice, calculatedBeta, nil
+	return calculatedPrice, calculatedDays, calculatedAssetPrice, calculatedBeta, priceIndexForS0, nil
 }
