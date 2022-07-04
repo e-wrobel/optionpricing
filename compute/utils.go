@@ -8,8 +8,8 @@ const (
 	European     = "European"
 	American     = "American"
 	spatialSteps = 100
-	leftBeta     = -0.03
-	rightBeta    = 0.04
+	leftBeta     = -0.25
+	rightBeta    = 0.25
 )
 
 func FromStructToMatrix(UxtOut *stubs.UxtSlice) [][]float64 {

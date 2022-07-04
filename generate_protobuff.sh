@@ -17,7 +17,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-protoc  -I=. --python_out=. ./option.proto
+python -m grpc_tools.protoc --proto_path=. *.proto --python_out=. --grpc_python_out=.
 if [ $? -ne 0 ]; then
   echo "Unable to generate Python stubs. Exiting..."
   exit 1
