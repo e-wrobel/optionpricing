@@ -89,7 +89,7 @@ class Solver(object):
 
         return initial_value
 
-    def pdeSolver(self, equation_type=linear):
+    def pdeSolverEuropean(self, equation_type=linear):
         """
         Pde solver.
 
@@ -385,24 +385,44 @@ if __name__ == '__main__':
     t_max = 0.9
 
     t = 180
-    k = 1500
-    beta = 0.00001
+    k = 700
+    beta = 0.000003
     sigma = 0.02
     r = 0.01
 
     p_european = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, anual_sigma=sigma, r=r, s_price=s0, t_days=t)
-    if p_european.pdeSolver(equation_type=linear):
+    if p_european.pdeSolverEuropean(equation_type=linear):
         p_european.plot('Black-Scholes')
         option_price, asset_price, expiration_time_in_years = p_european.calculated_option_price
         print('Option price: {:.3f}, asset price: {:.3f}, expiration time [{} years, {} days]'.format(option_price,
                                                                                                       asset_price,
                                                                                                       expiration_time_in_years,
                                                                                                       expiration_time_in_years * days_in_year))
-    p_american = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, anual_sigma=sigma, r=r, s_price=s0, t_days=t)
-    if p_american.pdeSolver(equation_type=non_linear):
-        p_american.plot('Black-Scholes')
-        option_price, asset_price, expiration_time_in_years = p_american.calculated_option_price
+    p_european_non_linear = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, anual_sigma=sigma, r=r, s_price=s0, t_days=t)
+    if p_european_non_linear.pdeSolverEuropean(equation_type=non_linear):
+        p_european_non_linear.plot('Black-Scholes')
+        option_price, asset_price, expiration_time_in_years = p_european_non_linear.calculated_option_price
         print('Option price: {:.3f}, asset price: {:.3f}, expiration time [{} years, {} days]'.format(option_price,
+                                                                                                      asset_price,
+                                                                                                      expiration_time_in_years,
+                                                                                                      expiration_time_in_years * days_in_year))
+
+    p_asian = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, anual_sigma=sigma, r=r, s_price=s0, t_days=t)
+    if p_asian.pdeSolverAsian(equation_type=linear):
+        p_asian.plot('Black-Scholes')
+        option_price, asset_price, expiration_time_in_years = p_asian.calculated_option_price
+        print('Option price: {:.3f}, asset price: {:.3f}, expiration time [{} years, {} days]'.format(option_price,
+
+                                                                                                      asset_price,
+                                                                                                      expiration_time_in_years,
+                                                                                                      expiration_time_in_years * days_in_year))
+
+    p_asian_non_linear = Solver(s_max=s_max, t_max=t_max, k=k, beta=beta, anual_sigma=sigma, r=r, s_price=s0, t_days=t)
+    if p_asian_non_linear.pdeSolverAsian(equation_type=non_linear):
+        p_asian_non_linear.plot('Black-Scholes')
+        option_price, asset_price, expiration_time_in_years = p_asian_non_linear.calculated_option_price
+        print('Option price: {:.3f}, asset price: {:.3f}, expiration time [{} years, {} days]'.format(option_price,
+
                                                                                                       asset_price,
                                                                                                       expiration_time_in_years,
                                                                                                       expiration_time_in_years * days_in_year))
