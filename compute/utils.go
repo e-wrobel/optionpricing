@@ -8,23 +8,23 @@ const (
 	European     = "European"
 	American     = "American"
 	spatialSteps = 100
-	leftBeta     = -0.25
-	rightBeta    = 0.25
+	leftBeta     = -0.025
+	rightBeta    = 0.025
 )
 
-func FromStructToMatrix(UxtOut *stubs.UxtSlice) [][]float64 {
+func FromStructToMatrix(uxtOut *stubs.UxtSlice) [][]float64 {
 	convertedU := make([][]float64, 0)
-	for _, u := range UxtOut.U {
+	for _, u := range uxtOut.U {
 		convertedU = append(convertedU, u.Ut)
 	}
 
 	return convertedU
 }
 
-func FromMatrixToStruct(Uxt [][]float64, calculatedPrice float64, calculatedDays int32, calculatedAssetPrice, calculatedBeta float64, priceIndexForS0 int32) *stubs.UxtSlice {
+func FromMatrixToStruct(uxt [][]float64, calculatedPrice float64, calculatedDays int32, calculatedAssetPrice, calculatedBeta float64, priceIndexForS0 int32) *stubs.UxtSlice {
 	uSlice := make([]*stubs.Uxt, 0)
 
-	for _, u := range Uxt {
+	for _, u := range uxt {
 		utStruct := stubs.Uxt{Ut: u}
 		uSlice = append(uSlice, &utStruct)
 	}

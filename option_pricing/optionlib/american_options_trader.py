@@ -31,12 +31,99 @@ class AmericanOptions(object):
         self.db_cursor = self.db_conn.cursor()
         expiration_date = self.option[4:10]
         self.expiration_date = '20{}-{}-{}'.format(expiration_date[:2], expiration_date[2:4],
-                                                       expiration_date[4:])
+                                                   expiration_date[4:])
         self.option_type = 'Call' if self.option[10] == 'C' else 'Put'
         self.K = float('{}.{}'.format(self.option[13:16], self.option[16:]))
         self.data = {}
         channel = grpc.insecure_channel('localhost:9000')
         self.grpc_client = stub.OptionPricingStub(channel=channel)
+
+    def calculate_option_data_divided(self, multiplied_by):
+        """
+        Calculation data for given option.
+        """
+        data = self.load_data()
+        stock_open_prices = []
+        option_open_prices = []
+        dates = []
+        for e in data:
+            date = e[1]
+            option_openning_price = e[2]
+            stock_openning_price = e[3]
+            dates.append(date)
+            option_open_prices.append(float(option_openning_price))
+            stock_open_prices.append(float(stock_openning_price))
+
+        T = self._days_between_dates(dates[0], dates[-1])
+        volatility = self._calculate_volatility(stock_open_prices, T)
+        num_of_days = int(len(option_open_prices) / multiplied_by)
+        divided_option_prices_for_given_s0 = []
+        betas = []
+        try:
+            for index in range(num_of_days, multiplied_by * num_of_days, num_of_days):
+                option_open_prices_part = option_open_prices[index - num_of_days:index]
+                stock_open_prices_part = stock_open_prices[index - num_of_days:index]
+                out = self.calculate_nonlinear_bs(num_of_days,
+                                                  option_open_prices_part[-1],
+                                                  stock_open_prices_part,
+                                                  volatility, 0.0)
+                calculated_beta = out['calculated_beta']
+                calculated_values = out['calculated_price_3d']
+                price_index = out['price_index']
+                option_prices_for_given_s0 = calculated_values.U[price_index].Ut[0:num_of_days]
+                divided_option_prices_for_given_s0.extend(option_prices_for_given_s0)
+                betas.append(calculated_beta)
+        except Exception:
+            pass
+
+        fig1, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(16, 10), facecolor='w')
+        ax1.grid()
+        ax1.set(xlabel='Time (days)', ylabel='Price (usd)', title='{} Market and computed data, stock volatility: {:.3f}'.
+                format(self.option.upper(), volatility))
+
+        ax1.plot(option_open_prices[0], marker='o', markersize=6, color="red",
+                 label='Market V(t={}): {:.2f}'.format(dates[0], option_open_prices[0]))
+        ax1.plot(0, divided_option_prices_for_given_s0[0], marker='o',
+                 markersize=6, color="black",
+                 label='Calculated V(t={}): {:.2f}'.format(dates[0],
+                                                           divided_option_prices_for_given_s0[0]))
+        ax1.plot(len(divided_option_prices_for_given_s0) - 1,
+                 option_open_prices[len(divided_option_prices_for_given_s0) - 1], marker='o', markersize=6,
+                 color="green",
+                 label='Market V(t={}): {:.2f}'.format(dates[len(divided_option_prices_for_given_s0) - 1],
+                                                       option_open_prices[len(divided_option_prices_for_given_s0) - 1]))
+        ax1.plot(len(divided_option_prices_for_given_s0) - 1, divided_option_prices_for_given_s0[-1], marker='o',
+                 markersize=6, color="blue",
+                 label='Calculated V(t={}): {:.2f}'.format(dates[len(divided_option_prices_for_given_s0) - 1],
+                                                           divided_option_prices_for_given_s0[-1]))
+
+        ax1.plot(divided_option_prices_for_given_s0, marker='', markersize=6,
+                 color="magenta")
+        ax1.plot(option_open_prices[0:len(divided_option_prices_for_given_s0)], marker='', markersize=6,
+                 color="black")
+        ax1.legend(loc='upper left', shadow=False)
+        ax1.legend(frameon=True)
+        ax2.grid()
+        for i in range(len(betas)):
+            ax2.plot(dates[i * num_of_days:i * num_of_days + num_of_days], [betas[i] for _ in range(num_of_days)],
+                     label='Calculated beta: {:.3f}'.format(betas[i]))
+        ax2.xaxis.set_ticks([])
+        ax2.legend(loc='upper left', shadow=False)
+        ax2.legend(frameon=True)
+        ax3.grid()
+        ax3.plot(stock_open_prices[0:len(divided_option_prices_for_given_s0)],
+                 label='Stock price', marker='', markersize=6,
+                 color="black",)
+        ax3.xaxis.set_ticks([])
+        ax3.set(ylabel='Price (usd)', title='{} Market data'.
+                format(self.stock.upper()))
+        for i in range(0, 3 * num_of_days, num_of_days):
+            ax3.plot(i, stock_open_prices[i], marker='o', markersize=6,
+                     label='Stock price {:.3f} at {}'.format(stock_open_prices[i], dates[i]))
+        ax3.legend(loc='upper left', shadow=False)
+        ax3.legend(frameon=True)
+        fig1.tight_layout()
+        plt.savefig("{}/{}_divided.png".format(".", self.option))
 
     def calculate_option_data(self):
         """
@@ -55,8 +142,9 @@ class AmericanOptions(object):
             stock_open_prices.append(float(stock_openning_price))
 
         T = self._days_between_dates(dates[0], dates[-1])
-        stock_open_prices[-1] = self.K
         volatility = self._calculate_volatility(stock_open_prices, T)
+
+        # stock_open_prices[-1] = self.K
         option_price_from_last_day = option_open_prices[-1]
         out = self.calculate_nonlinear_bs(T, option_price_from_last_day, stock_open_prices, volatility, 0.0)
         calculated_beta = out['calculated_beta']
@@ -77,7 +165,6 @@ class AmericanOptions(object):
         ax1.plot(len(option_open_prices), shifted_prices_for_given_s0[-1], marker='o', markersize=6, color="blue",
                  label='Nls-BS V(t={}): {:.2f}'.format(dates[-1], shifted_prices_for_given_s0[-1]))
 
-        ax1.plot(shifted_prices_for_given_s0)
         ax1.plot(option_open_prices)
         ax1.legend(loc='upper left', shadow=False)
         ax1.legend(frameon=True)
@@ -198,7 +285,7 @@ class AmericanOptions(object):
     def calculate_nonlinear_bs(self, T, option_price_from_boundary_conditions, stock_open_prices, volatility, beta):
         """
         Make grpc connection and calculate
-        :param T:
+        :param T: expiry time in days
         :param beta: 0 means that it we will calibrate, otherwise we will calculate for the given number
         :param option_price_from_boundary_conditions:
         :param stock_open_prices:
@@ -210,7 +297,7 @@ class AmericanOptions(object):
         request.maxPrice = 200
         request.volatility = volatility
         request.r = self.r
-        request.tMax = 0.7
+        request.tMax = (1.0 / DAYS_IN_YEAR) * (T + 10)
         request.strikePrice = self.K
         request.calculationType = 'NonLinear'
         request.beta = beta
@@ -286,4 +373,5 @@ if __name__ == '__main__':
     # a = AmericanOptions("APPL", "AAPL220617C00143000", 0.03, "/Users/marcinwroblewski/GolandProjects/optionpricing/american.db")
     a = AmericanOptions("APPL", "AAPL220617C00155000", 0.03,
                         "/Users/marcinwroblewski/GolandProjects/optionpricing/american.db")
-    a.calculate_option_data()
+    a.calculate_option_data_divided(4)
+    # a.calculate_option_data()
