@@ -259,14 +259,13 @@ class Stooq(StooqBase):
                  label='V(t={}): {:.2f}'.format(dates[-1], option_openings[-1]))
 
         # Set up grid, legend, and limits
-        # ax1.legend(loc='upper left', shadow=False)
-        # ax1.legend(frameon=True)
+        ax1.legend(loc='upper left', shadow=False)
+        ax1.legend(frameon=True)
 
         # # For x (time) axis
         every_xaxis_tick = int(0.1 * len(dates)) if len(dates) > 10 else 1
-        ax1.xaxis.set_ticks([])
-        # ax1.set_xticklabels(dates[::every_xaxis_tick], minor=False, rotation=30)
-        ax1.set_xticklabels([])
+        ax1.xaxis.set_ticks(dates[::every_xaxis_tick])
+        ax1.set_xticklabels(dates[::every_xaxis_tick], minor=False, rotation=30)
         ax2.grid()
 
         ax2.set(ylabel='Price (pln)', title="{}".format('WIG20'))
@@ -277,9 +276,9 @@ class Stooq(StooqBase):
         ax2.plot(len(dates) - 1, asset_openings[-1], marker='o', markersize=6, color="green",
                  label='S(t={}): {:.2f}'.format(dates[-1], asset_openings[-1]))
         # ax2.axhline(y=K, color='c', linestyle='--', label='K: {:.2f}'.format(K))
-        # ax2.legend(loc='lower right', shadow=True)
-        # ax2.legend(frameon=True)
-        ax2.xaxis.set_ticks([])
+        ax2.legend(loc='lower right', shadow=True)
+        ax2.legend(frameon=True)
+        ax2.xaxis.set_ticks(dates[::every_xaxis_tick])
         ax2.set_xticklabels(dates[::every_xaxis_tick], minor=False, rotation=30)
         fig.tight_layout()
 

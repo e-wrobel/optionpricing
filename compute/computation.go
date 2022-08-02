@@ -7,7 +7,7 @@ import (
 )
 
 const daysInYear = 252.0
-const numberOfSteps = 1000
+const numberOfSteps = 10009
 
 func computeLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta, s0 float64, t int32, optionStyle string) ([][]float64, float64, int32, float64, int32, error) {
 	isFound := false
@@ -207,9 +207,20 @@ func calibrateBetaForNonLinearBs(leftBeta, rightBeta float64, incommingRequest *
 	var calculatedDays, priceIndexForS0 int32
 	var Uxt [][]float64
 	var err error
-	isFound := false
 	i := 0
 
+	// Calculate for beta = 0 aka linear model
+	Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, priceIndexForS0, err = computeNonLinearBlackScholes(incommingRequest.MaxPrice,
+		incommingRequest.Volatility, incommingRequest.R, incommingRequest.TMax, incommingRequest.StrikePrice, 0,
+		incommingRequest.StartPrice, incommingRequest.MaturityTimeDays, incommingRequest.OptionStyle)
+	if err != nil {
+		return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, 0, 0, fmt.Errorf("computation error: %v", err)
+	}
+	if int32(calculatedPrice) == int32(incommingRequest.ExpectedPrice) {
+		return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, 0, priceIndexForS0, nil
+	}
+
+	// Calculate for beta != 0
 	for leftBeta < rightBeta {
 		middleBeta = (leftBeta + rightBeta) / 2
 		incommingRequest.Beta = middleBeta
@@ -220,7 +231,6 @@ func calibrateBetaForNonLinearBs(leftBeta, rightBeta float64, incommingRequest *
 			return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, middleBeta, 0, fmt.Errorf("computation error: %v", err)
 		}
 		if int32(calculatedPrice) == int32(incommingRequest.ExpectedPrice) {
-			isFound = true
 			break
 		}
 		if calculatedPrice < incommingRequest.ExpectedPrice {
@@ -232,12 +242,12 @@ func calibrateBetaForNonLinearBs(leftBeta, rightBeta float64, incommingRequest *
 		i++
 
 		if i > numberOfSteps {
+			fmt.Printf("Number of steps: %v\n, stopping", i)
 			break
 		}
 	}
-
-	if !isFound {
-		return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, middleBeta, priceIndexForS0, fmt.Errorf("unable to find the right value in non-linear calculus")
+	if calculatedPrice < 0 {
+		calculatedPrice = 0.0
 	}
 
 	fmt.Printf("Number of steps: %v\n", i)
