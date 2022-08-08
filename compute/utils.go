@@ -7,9 +7,9 @@ const (
 	Nonlinear    = "NonLinear"
 	European     = "European"
 	American     = "American"
-	spatialSteps = 100
-	leftBeta     = 0.0
-	rightBeta    = 0.02
+	spatialSteps = 200
+	leftBeta     = -0.5
+	rightBeta    = 0.5
 )
 
 func FromStructToMatrix(uxtOut *stubs.UxtSlice) [][]float64 {

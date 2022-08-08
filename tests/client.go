@@ -26,12 +26,12 @@ func main() {
 		Volatility:       0.2,
 		R:                0.01,
 		TMax:             0.9,
-		StrikePrice:      138,
+		StrikePrice:      155,
 		CalculationType:  compute.Nonlinear,
-		Beta:             0.0,
-		StartPrice:       149,
-		MaturityTimeDays: 18,
-		ExpectedPrice:    8.1,
+		Beta:             0.1,
+		StartPrice:       167,
+		MaturityTimeDays: 15,
+		ExpectedPrice:    0.1,
 		OptionStyle:      compute.European,
 	}
 

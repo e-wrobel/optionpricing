@@ -38,7 +38,8 @@ func (o *optionPricingServer) ComputePrice(ctx context.Context, input *stubs.Com
 			U = FromMatrixToStruct(Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, beta, priceIndexForS0)
 			// Otherwise we want just to calculate option price using that particular beta
 		} else {
-			Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, priceIndexForS0, err = computeNonLinearBlackScholes(input.MaxPrice,
+			ds := input.MaxPrice / spatialSteps
+			Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, priceIndexForS0, err = computeNonLinearBlackScholes(ds, input.MaxPrice,
 				input.Volatility, input.R, input.TMax, input.StrikePrice, input.Beta,
 				input.StartPrice, input.MaturityTimeDays, input.OptionStyle)
 			U = FromMatrixToStruct(Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, input.Beta, priceIndexForS0)

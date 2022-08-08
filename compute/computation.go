@@ -1,13 +1,17 @@
 package compute
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	stubs "optionpricing/option"
 )
 
 const daysInYear = 252.0
-const numberOfSteps = 10009
+const numberOfSteps = 10000
+
+var errIsNan = errors.New("price is NAN")
+var errInInf = errors.New("price is INF")
 
 func computeLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta, s0 float64, t int32, optionStyle string) ([][]float64, float64, int32, float64, int32, error) {
 	isFound := false
@@ -106,14 +110,14 @@ func computeLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta,
 	return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, priceIndexForS0, nil
 }
 
-func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, beta, s0 float64, t int32, optionStyle string) ([][]float64, float64, int32, float64, int32, error) {
+func computeNonLinearBlackScholes(ds, maxPrice, volatility, r, tMax, strikePrice, beta, s0 float64, t int32, optionStyle string) ([][]float64, float64, int32, float64, int32, error) {
 	var calculatedPrice float64
 	var calculatedDays, priceIndexForS0 int32
 	var calculatedAssetPrice float64
 	dailyVolatility := volatility / (math.Sqrt(float64(t)))
 
 	// Spatial differential
-	ds := maxPrice / spatialSteps
+
 	ds2 := math.Pow(ds, 2)
 	volatility2 := math.Pow(volatility, 2)
 
@@ -153,6 +157,7 @@ func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, be
 		// Second loops stands for calculating Uxt at given t value and for every price in priceSlice
 		for sIndex := 1; sIndex < spatialSize-1; sIndex++ {
 			s := priceSlice[sIndex]
+
 			R1 := -r*Uxt[sIndex][tIndex-1] - beta*math.Pow(Uxt[sIndex][tIndex-1], 3)
 			R2 := r * s * (Uxt[sIndex+1][tIndex-1] - Uxt[sIndex-1][tIndex-1]) / (2 * ds)
 			R3 := 0.5 * volatility2 * (math.Pow(s, 2)) * (Uxt[sIndex-1][tIndex-1] - 2*Uxt[sIndex][tIndex-1] + Uxt[sIndex+1][tIndex-1]) / ds2
@@ -167,6 +172,15 @@ func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, be
 
 			// Derived function in time domain
 			Uxt[sIndex][tIndex] = Uxt[sIndex][tIndex-1] + (1.0/6.0)*(k1+2.0*k2+2.0*k3+k4)
+			if math.IsNaN(Uxt[sIndex][tIndex]) {
+				fmt.Println("Got Nan")
+				return Uxt, 0, 0, 0, 0, errIsNan
+			}
+
+			if math.IsInf(Uxt[sIndex][tIndex], 0) {
+				fmt.Println("Got Inf")
+				return Uxt, 0, 0, 0, 0, errInInf
+			}
 			if optionStyle == American {
 				bsPrice := PriceBlackScholes(true, s, strikePrice, 1, dailyVolatility, r, 0.0)
 				if bsPrice > Uxt[sIndex][tIndex] {
@@ -183,11 +197,7 @@ func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, be
 				calculatedAssetPrice = s
 				priceIndexForS0 = int32(sIndex)
 
-				if math.IsNaN(calculatedPrice) {
-					fmt.Printf("CalculatedPris is NAN\n")
-					return Uxt, 0, 0, 0, 0, fmt.Errorf("calculatedPrice is NAN")
-				}
-
+				fmt.Println("Price was found for given beta")
 				return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, priceIndexForS0, nil
 			}
 		}
@@ -197,7 +207,7 @@ func computeNonLinearBlackScholes(maxPrice, volatility, r, tMax, strikePrice, be
 		Uxt[spatialSize-1][tIndex] = priceSlice[spatialSize-1] - strikePrice
 
 	}
-
+	fmt.Println("Unable to find price for given beta")
 	return Uxt, 0, 0, 0, 0, fmt.Errorf("unable to find option parameters")
 
 }
@@ -210,25 +220,44 @@ func calibrateBetaForNonLinearBs(leftBeta, rightBeta float64, incommingRequest *
 	i := 0
 
 	// Calculate for beta = 0 aka linear model
-	Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, priceIndexForS0, err = computeNonLinearBlackScholes(incommingRequest.MaxPrice,
-		incommingRequest.Volatility, incommingRequest.R, incommingRequest.TMax, incommingRequest.StrikePrice, 0,
-		incommingRequest.StartPrice, incommingRequest.MaturityTimeDays, incommingRequest.OptionStyle)
-	if err != nil {
-		return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, 0, 0, fmt.Errorf("computation error: %v", err)
-	}
-	if int32(calculatedPrice) == int32(incommingRequest.ExpectedPrice) {
-		return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, 0, priceIndexForS0, nil
-	}
+	//Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, priceIndexForS0, err = computeNonLinearBlackScholes(incommingRequest.MaxPrice,
+	//	incommingRequest.Volatility, incommingRequest.R, incommingRequest.TMax, incommingRequest.StrikePrice, 0,
+	//	incommingRequest.StartPrice, incommingRequest.MaturityTimeDays, incommingRequest.OptionStyle)
+	//if err != nil {
+	//	return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, 0, 0, fmt.Errorf("computation error: %v", err)
+	//}
+	//if int32(calculatedPrice) == int32(incommingRequest.ExpectedPrice) {
+	//	return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, 0, priceIndexForS0, nil
+	//}
 
 	// Calculate for beta != 0
+
 	for leftBeta < rightBeta {
+		ds := incommingRequest.MaxPrice / spatialSteps
 		middleBeta = (leftBeta + rightBeta) / 2
 		incommingRequest.Beta = middleBeta
-		Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, priceIndexForS0, err = computeNonLinearBlackScholes(incommingRequest.MaxPrice,
-			incommingRequest.Volatility, incommingRequest.R, incommingRequest.TMax, incommingRequest.StrikePrice, incommingRequest.Beta,
-			incommingRequest.StartPrice, incommingRequest.MaturityTimeDays, incommingRequest.OptionStyle)
-		if err != nil {
-			return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, middleBeta, 0, fmt.Errorf("computation error: %v", err)
+		for {
+			Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, priceIndexForS0, err = computeNonLinearBlackScholes(ds, incommingRequest.MaxPrice,
+				incommingRequest.Volatility, incommingRequest.R, incommingRequest.TMax, incommingRequest.StrikePrice, incommingRequest.Beta,
+				incommingRequest.StartPrice, incommingRequest.MaturityTimeDays, incommingRequest.OptionStyle)
+			if err == errIsNan {
+				ds /= 2
+				fmt.Printf("Decreasing ds: %v\n", ds)
+				continue
+			}
+			if err == errInInf {
+				ds *= 2
+				fmt.Printf("Increasing ds: %v\n", ds)
+				continue
+			}
+			if err == nil {
+				fmt.Println("Successfully calculated price")
+				break
+			}
+			if err != nil {
+				fmt.Println("Unable to find option price")
+				break
+			}
 		}
 		if int32(calculatedPrice) == int32(incommingRequest.ExpectedPrice) {
 			break
