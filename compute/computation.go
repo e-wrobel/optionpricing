@@ -8,7 +8,7 @@ import (
 )
 
 const daysInYear = 252.0
-const numberOfSteps = 10000
+const numberOfSteps = 5000
 
 var errIsNan = errors.New("price is NAN")
 var errInInf = errors.New("price is INF")

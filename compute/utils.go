@@ -8,7 +8,7 @@ const (
 	European     = "European"
 	American     = "American"
 	spatialSteps = 200
-	rightBeta    = 0.5
+	rightBeta    = 0.6
 	leftBeta     = -rightBeta
 )
 

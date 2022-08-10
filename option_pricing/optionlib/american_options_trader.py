@@ -1,9 +1,13 @@
 import math
 import sqlite3
+import string
 from datetime import date
 
 import grpc
 import statistics as stat
+
+import numpy as np
+
 import option_pricing.grpc_option.option_pb2_grpc as stub
 import option_pricing.grpc_option.option_pb2 as message
 import matplotlib
@@ -82,7 +86,7 @@ class AmericanOptions(object):
             std_dev_list.append(abs(divided_option_prices_for_given_s0[i] - option_open_prices[i]))
         std_dev = stat.stdev(std_dev_list)
 
-        fig1, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(16, 10), facecolor='w')
+        fig1, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1, figsize=(16, 16), facecolor='w')
         ax1.grid()
         ax1.set(xlabel='Time (days)', ylabel='Price (usd)', title='{} Market and computed data, stock volatility: {:.3f}, STD DEV: {:.3f}'.
                 format(self.option.upper(), volatility, std_dev))
@@ -110,13 +114,15 @@ class AmericanOptions(object):
         ax1.legend(loc='upper left', shadow=False)
         ax1.legend(frameon=True)
         ax2.grid()
+        ax2.set(xlabel='Time (days)', ylabel='Beta',
+                title='Calculated Beta for given time - stepped')
         for i in range(len(betas)):
             ax2.plot(dates[i * num_of_days:i * num_of_days + num_of_days], [betas[i] for _ in range(num_of_days)],
                      label='Calculated beta: {:.3f}'.format(betas[i]))
         ax2.xaxis.set_ticks([])
         ax3.grid()
         ax3.set(xlabel='Time (days)', ylabel='Beta',
-                title='Calculated Beta for given time')
+                title='Calculated Beta for given time - continuously')
         ax3.plot(betas, label='Calculated beta')
         ax3.xaxis.set_ticks([])
         ax3.legend(loc='upper left', shadow=False)
@@ -131,6 +137,11 @@ class AmericanOptions(object):
         for i in range(0, (multiplied_by -1)* num_of_days, num_of_days):
             ax4.plot(i, stock_open_prices[i], marker='o', markersize=6,
                      label='Stock price {:.3f} at {}'.format(stock_open_prices[i], dates[i]))
+            ax4.vlines(i, 150, 180, color='red', linestyle='dotted')
+
+        for n, ax in enumerate([ax1, ax2, ax3, ax4]):
+            ax.text(0.0, 1.1, string.ascii_uppercase[n], transform=ax.transAxes,
+                    size=20, weight='bold')
 
         fig1.tight_layout()
         plt.savefig("{}/{}_divided.png".format(".", self.option))
