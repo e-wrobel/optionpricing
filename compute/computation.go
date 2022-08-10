@@ -218,22 +218,22 @@ func calibrateBetaForNonLinearBs(leftBeta, rightBeta float64, incommingRequest *
 	var Uxt [][]float64
 	var err error
 	i := 0
-
+	ds := incommingRequest.MaxPrice / spatialSteps
 	// Calculate for beta = 0 aka linear model
-	//Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, priceIndexForS0, err = computeNonLinearBlackScholes(incommingRequest.MaxPrice,
-	//	incommingRequest.Volatility, incommingRequest.R, incommingRequest.TMax, incommingRequest.StrikePrice, 0,
-	//	incommingRequest.StartPrice, incommingRequest.MaturityTimeDays, incommingRequest.OptionStyle)
-	//if err != nil {
-	//	return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, 0, 0, fmt.Errorf("computation error: %v", err)
-	//}
-	//if int32(calculatedPrice) == int32(incommingRequest.ExpectedPrice) {
-	//	return Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, 0, priceIndexForS0, nil
-	//}
+	Uxt, calculatedPrice, calculatedDays, calculatedAssetPrice, priceIndexForS0, err = computeNonLinearBlackScholes(ds, incommingRequest.MaxPrice,
+		incommingRequest.Volatility, incommingRequest.R, incommingRequest.TMax, incommingRequest.StrikePrice, 0,
+		incommingRequest.StartPrice, incommingRequest.MaturityTimeDays, incommingRequest.OptionStyle)
+	if err != nil {
+		fmt.Printf("Computation error for linear model, continue with non-linear: %v", err)
+	}
+	if int32(calculatedPrice) == int32(incommingRequest.ExpectedPrice) {
+		return Uxt, math.Max(calculatedPrice, 0), calculatedDays, calculatedAssetPrice, 0, priceIndexForS0, nil
+	}
 
 	// Calculate for beta != 0
 
 	for leftBeta < rightBeta {
-		ds := incommingRequest.MaxPrice / spatialSteps
+		ds = incommingRequest.MaxPrice / spatialSteps
 		middleBeta = (leftBeta + rightBeta) / 2
 		incommingRequest.Beta = middleBeta
 		for {

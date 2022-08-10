@@ -179,10 +179,10 @@ class Stooq(StooqBase):
 
         # Add grpc call here
         request = message.ComputeRequest()
-        request.maxPrice = 2350
+        request.maxPrice = 2500
         request.volatility = volatility
         request.r = r
-        request.tMax = 0.9
+        request.tMax = 0.5
         request.strikePrice = K
         request.calculationType = 'NonLinear'
         request.beta = 0.0
