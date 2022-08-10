@@ -126,6 +126,11 @@ func computeNonLinearBlackScholes(ds, maxPrice, volatility, r, tMax, strikePrice
 	spatialSize := int(maxPrice / ds)
 	timeSize := int(tMax / dt)
 
+	if spatialSize <= 2 {
+		fmt.Printf("SpatialSize too low: %v\n", spatialSize)
+		return nil, 0, 0, 0, 0, fmt.Errorf("spatialSize too low: %v", spatialSize)
+	}
+
 	// Two dimensional slice for Uxt
 	Uxt := make([][]float64, spatialSize)
 
@@ -173,12 +178,12 @@ func computeNonLinearBlackScholes(ds, maxPrice, volatility, r, tMax, strikePrice
 			// Derived function in time domain
 			Uxt[sIndex][tIndex] = Uxt[sIndex][tIndex-1] + (1.0/6.0)*(k1+2.0*k2+2.0*k3+k4)
 			if math.IsNaN(Uxt[sIndex][tIndex]) {
-				fmt.Println("Got Nan")
+				fmt.Println("Got Nan - need to increase ds")
 				return Uxt, 0, 0, 0, 0, errIsNan
 			}
 
 			if math.IsInf(Uxt[sIndex][tIndex], 0) {
-				fmt.Println("Got Inf")
+				fmt.Println("Got Inf - need to increase ds")
 				return Uxt, 0, 0, 0, 0, errInInf
 			}
 			if optionStyle == American {
@@ -241,12 +246,12 @@ func calibrateBetaForNonLinearBs(leftBeta, rightBeta float64, incommingRequest *
 				incommingRequest.Volatility, incommingRequest.R, incommingRequest.TMax, incommingRequest.StrikePrice, incommingRequest.Beta,
 				incommingRequest.StartPrice, incommingRequest.MaturityTimeDays, incommingRequest.OptionStyle)
 			if err == errIsNan {
-				ds /= 2
+				ds /= 1.2
 				fmt.Printf("Decreasing ds: %v\n", ds)
 				continue
 			}
 			if err == errInInf {
-				ds *= 2
+				ds *= 1.2
 				fmt.Printf("Increasing ds: %v\n", ds)
 				continue
 			}

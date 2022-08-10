@@ -22,16 +22,16 @@ func main() {
 	client := stubs.NewOptionPricingClient(conn)
 
 	incomingRequest := &stubs.ComputeRequest{
-		MaxPrice:         200,
+		MaxPrice:         400.0,
 		Volatility:       0.2,
 		R:                0.01,
-		TMax:             0.9,
+		TMax:             0.5,
 		StrikePrice:      155,
 		CalculationType:  compute.Nonlinear,
-		Beta:             0.1,
-		StartPrice:       167,
-		MaturityTimeDays: 15,
-		ExpectedPrice:    0.1,
+		Beta:             0.0,
+		StartPrice:       170,
+		MaturityTimeDays: 10,
+		ExpectedPrice:    17,
 		OptionStyle:      compute.European,
 	}
 
