@@ -8,7 +8,7 @@ import (
 )
 
 const daysInYear = 252.0
-const numberOfSteps = 5000
+const numberOfSteps = 15000
 
 var errIsNan = errors.New("price is NAN")
 var errInInf = errors.New("price is INF")
@@ -121,9 +121,12 @@ func computeNonLinearBlackScholes(ds, maxPrice, volatility, r, tMax, strikePrice
 	ds2 := math.Pow(ds, 2)
 	volatility2 := math.Pow(volatility, 2)
 
-	// Time differential
+	// Time differential -> Assuming 252 days = year
 	dt := 1.0 / 252.0
 	spatialSize := int(maxPrice / ds)
+	for float64(spatialSize)*ds < s0 {
+		spatialSize++
+	}
 	timeSize := int(tMax / dt)
 
 	if spatialSize <= 2 {

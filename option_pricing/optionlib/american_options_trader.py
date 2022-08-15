@@ -393,5 +393,5 @@ if __name__ == '__main__':
     # a = AmericanOptions("APPL", "AAPL220617C00143000", 0.03, "/Users/marcinwroblewski/GolandProjects/optionpricing/american.db")
     a = AmericanOptions("APPL", "AAPL220617C00155000", 0.03,
                         "/Users/marcinwroblewski/GolandProjects/optionpricing/american.db")
-    a.calculate_option_data_divided(12)
+    a.calculate_option_data_divided(50)
     # a.calculate_option_data()

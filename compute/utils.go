@@ -7,8 +7,8 @@ const (
 	Nonlinear    = "NonLinear"
 	European     = "European"
 	American     = "American"
-	spatialSteps = 200
-	rightBeta    = 15.5
+	spatialSteps = 100
+	rightBeta    = 1.2
 	leftBeta     = -rightBeta
 )
 
