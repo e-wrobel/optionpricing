@@ -22,8 +22,6 @@ class HestonModel(object):
         """
 
         random.seed(5000)  # Set the random seed
-        self.N = 1000  # Number of small sub-steps (time)
-
         self.S0 = s0
         self.v0 = initial_variance
         self.rho = rho
@@ -33,8 +31,21 @@ class HestonModel(object):
         self.T = T
         self.K = K
 
-    def option_pricing(self, number_of_montecarlo_paths, number_of_time_steps):
+    def option_pricing(self, number_of_montecarlo_paths, number_of_time_steps, sigma):
         """
+        Inputs:
+         - S0, v0: initial parameters for asset and variance
+         - rho   : correlation between asset returns and variance
+         - kappa : rate of mean reversion in variance process
+         - theta : long-term mean of variance process
+         - sigma : vol of vol / volatility of variance process
+         - T     : time of simulation
+         - N     : number of time steps
+         - M     : number of scenarios / simulations
+
+        Outputs:
+        - asset prices over time (numpy array)
+        - variance over time (numpy array)
 
         :param number_of_montecarlo_paths: Number of Monte carlo paths
         :param number_of_time_steps: Number of small sub-steps (time)
@@ -42,27 +53,39 @@ class HestonModel(object):
         """
 
         dt = self.T / number_of_time_steps
-
+        r = 0.03
         # Integrate equations: Euler method, Montecarlo vectorized
+        # Create vector representing given number of paths
         V_t = np.ones(number_of_montecarlo_paths) * self.v0
         S_t = np.ones(number_of_montecarlo_paths) * self.S0
+        SB_t = np.ones(number_of_montecarlo_paths) * self.S0
 
         # Generate Montecarlo paths
-        for t in range(1, self.N):
+        for t in range(1, number_of_time_steps):
             # Random numbers for S_t and V_t
             Z_s = np.random.normal(size=number_of_montecarlo_paths)
             Z_v = self.rho * Z_s + np.sqrt(1 - self.rho ** 2) * np.random.normal(size=number_of_montecarlo_paths)
 
-            # Euler integration
+            # Volatility can be >= 0
             V_t = np.maximum(V_t, 0)
-            S_t = S_t * np.exp(np.sqrt(V_t * dt) * Z_s - V_t * dt / 2)  # Stock price process
-            V_t = V_t + self.kappa * (self.theta - V_t) * dt + self.epsilon * np.sqrt(V_t * dt) * Z_v  # Volatility process
+
+            # Calculate vector for given time
+            # Stock price process driven by Heston
+            S_t = S_t * np.exp(np.sqrt(V_t * dt) * Z_s + (r - 0.5 * V_t) * dt)
+
+            # Stock price process driven by Black-Scholes
+            SB_t = SB_t * np.exp((r - 0.5 * sigma ** 2) * dt + sigma * np.sqrt(dt) * Z_s)
+
+            # Volatility process
+            V_t = V_t + self.kappa * (self.theta - V_t) * dt + self.epsilon * np.sqrt(V_t * dt) * Z_v
 
         option_price = np.mean(np.maximum(S_t - self.K, 0))
+        option_price_for_black_scholes = np.mean(np.maximum(SB_t - self.K, 0))
 
-        price = round(option_price, 2)
+        price_for_heston = round(option_price, 2)
+        price_black_scholes = round(option_price_for_black_scholes, 2)
 
-        return price
+        return price_for_heston, price_black_scholes
 
     def plot_heston(self, s_t: list, v_t: list, plot_directory: str):
         """

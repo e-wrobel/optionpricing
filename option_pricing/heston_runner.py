@@ -34,24 +34,30 @@ class Solution(object):
 
 
 if __name__ == '__main__':
-    # OW20A211975
+    # OW20A211150
     N = 1000  # Number of small sub-steps (time)
     n = 10000  # Number of Monte carlo paths
 
-    S_0 = 1663.75  # Initial stock price
-    K = 1800  # Strike price
-    V_0 = 0.56  # Initial variance is square of volatility
-    kappa = 1  # kappa mean reversion speed
-    theta = 0.03  # Long-run variance
-    epsilon = 0.3  # volatility of volatility
-    rho = 0.0  # correlation
-    T = 88 / 252  # time to maturity
+    S_0 = 1625  # Initial stock price
+    K = 1150  # Strike price
+    V_0 = 0.065  # Initial variance is square of volatility
+    T = 43 / 252  # time to maturity
+    Option_price = 847.910
 
+    # Heston dependent parameters
+    kappa = 8.0  # rate of mean reversion of variance under risk-neutral dynamics
+    theta = 8.0  # long-term mean of variance under risk-neutral dynamics
+    v0 = 0.9   # initial variance under risk-neutral dynamics
+    rho = 0.7  # correlation between returns and variances under risk-neutral dynamics
+    epsilon = 0.1  # volatility of volatility
+    sigma = 2.55
     h = HestonModel(s0=S_0, initial_variance=V_0, rho=rho, kappa=kappa, theta=theta, epsilon=epsilon, T=T, K=K)
-    price = h.option_pricing(number_of_montecarlo_paths=n, number_of_time_steps=N)
-    # # plot_dir = '/Users/marcinwroblewski/GolandProjects/optionpricing/option_pricing/option_data'
+    price_heston, price_bs = h.option_pricing(number_of_montecarlo_paths=n, number_of_time_steps=N,  sigma=sigma)
+    print("Calculated prices for Heston: {}, Black-Scholes: {}".format(price_heston, price_bs))
 
-    print(price)
+    # Calculated prices for Heston: 677.27, Black-Scholes: 791.48
+
+    # # plot_dir = '/Users/marcinwroblewski/GolandProjects/optionpricing/option_pricing/option_data'
     # initial_variances = generate_scenarios(0.01, theta, 0.05 * theta)
     # epsilons = generate_scenarios(0.01, 0.02, 0.001)
     # rhos = generate_scenarios(-1.0, 1.0, 0.2)
