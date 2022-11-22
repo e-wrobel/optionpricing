@@ -48,7 +48,7 @@ if __name__ == '__main__':
     kappa = 9.0  # rate of mean reversion of variance under risk-neutral dynamics
     theta = 11.0  # long-term mean of variance under risk-neutral dynamics
     v0 = 0.9   # initial variance under risk-neutral dynamics
-    rho = 0.7  # correlation between returns and variances under risk-neutral dynamics
+    rho = -0.7  # correlation between returns and variances under risk-neutral dynamics
     epsilon = 0.1  # volatility of volatility
 
     sigma = 2.8
