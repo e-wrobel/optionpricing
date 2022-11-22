@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib
 
 matplotlib.use('Agg')
-from matplotlib import ticker
 import matplotlib.pyplot as plt
 
 

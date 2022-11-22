@@ -45,12 +45,13 @@ if __name__ == '__main__':
     Option_price = 847.910
 
     # Heston dependent parameters
-    kappa = 8.0  # rate of mean reversion of variance under risk-neutral dynamics
-    theta = 8.0  # long-term mean of variance under risk-neutral dynamics
+    kappa = 9.0  # rate of mean reversion of variance under risk-neutral dynamics
+    theta = 11.0  # long-term mean of variance under risk-neutral dynamics
     v0 = 0.9   # initial variance under risk-neutral dynamics
     rho = 0.7  # correlation between returns and variances under risk-neutral dynamics
     epsilon = 0.1  # volatility of volatility
-    sigma = 2.55
+
+    sigma = 2.8
     h = HestonModel(s0=S_0, initial_variance=V_0, rho=rho, kappa=kappa, theta=theta, epsilon=epsilon, T=T, K=K)
     price_heston, price_bs = h.option_pricing(number_of_montecarlo_paths=n, number_of_time_steps=N,  sigma=sigma)
     print("Calculated prices for Heston: {}, Black-Scholes: {}".format(price_heston, price_bs))
