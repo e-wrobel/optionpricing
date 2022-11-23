@@ -51,7 +51,7 @@ if __name__ == '__main__':
     rho = -0.7  # correlation between returns and variances under risk-neutral dynamics
     epsilon = 0.1  # volatility of volatility
 
-    sigma = 2.8
+    sigma = 0.2
     h = HestonModel(s0=S_0, initial_variance=V_0, rho=rho, kappa=kappa, theta=theta, epsilon=epsilon, T=T, K=K)
     price_heston, price_bs = h.option_pricing(number_of_montecarlo_paths=n, number_of_time_steps=N,  sigma=sigma)
     print("Calculated prices for Heston: {}, Black-Scholes: {}".format(price_heston, price_bs))
