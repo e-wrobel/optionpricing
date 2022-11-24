@@ -14,9 +14,9 @@ func TestHeston(t *testing.T) {
 		{
 			name: "test_average_price",
 			obj: &Heston{
-				InitialPrice:    1625.0,
+				InitialPrice:    1400.0,
 				T:               float64(43) / float64(252),
-				K:               1150.0,
+				K:               1200.0,
 				R:               0.03,
 				InitialVariance: 0.065,
 				Rho:             -0.7,

@@ -38,8 +38,8 @@ if __name__ == '__main__':
     N = 1000  # Number of small sub-steps (time)
     n = 10000  # Number of Monte carlo paths
 
-    S_0 = 1625  # Initial stock price
-    K = 1150  # Strike price
+    S_0 = 1400  # Initial stock price
+    K = 1200  # Strike price
     V_0 = 0.065  # Initial variance is square of volatility
     T = 43 / 252  # time to maturity
     Option_price = 847.910

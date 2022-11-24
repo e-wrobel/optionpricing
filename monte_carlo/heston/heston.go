@@ -37,38 +37,33 @@ func (h *Heston) SimulateOptionPrice(numberOfPaths, numberOfTimeSteps int) (floa
 		V[i] = h.InitialVariance
 	}
 
-	for t := 0; t < numberOfTimeSteps; t++ {
+	for t := 1; t < numberOfTimeSteps; t++ {
 		// Random numbers for S_t and V_t.
 		Zs := normalDistributedSlice(numberOfPaths)
 		Zv := normalModifiedDistributedSlice(Zs, h.Rho, numberOfPaths)
 
-		// Volatility can be >= 0.
 		for i := 0; i < numberOfPaths; i++ {
-			V[i] = math.Max(V[i], 0)
-		}
-
-		// S_t = S_t * np.exp(np.sqrt(V_t * dt) * Z_s + (r - 0.5 * V_t) * dt)
-		for i := 0; i < numberOfPaths; i++ {
-			S[i] = S[i] * math.Exp(math.Sqrt(V[i]*dt)*Zs[i]+(h.R-0.5*V[i])*dt)
+			exp := math.Exp((h.R-0.5*V[i])*dt + math.Sqrt(V[i]*dt)*Zs[i])
+			S[i] = S[i] * exp
 		}
 
 		// Volatility process
 		for i := 0; i < numberOfPaths; i++ {
-			V[i] = V[i] + h.Kappa*(h.Theta-V[i]*dt+h.Epsilon*math.Sqrt(V[i]*dt)*Zv[i])
+			V[i] = math.Max(V[i]+h.Kappa*(h.Theta-V[i])*dt+h.Epsilon*math.Sqrt(V[i]*dt)*Zv[i], 0)
 		}
 	}
 
-	averagePrices := make([]float64, numberOfPaths, numberOfPaths)
+	optionPrices := make([]float64, numberOfPaths, numberOfPaths)
 	for i := 0; i < numberOfPaths; i++ {
-		averagePrices[i] = math.Max(S[i]-h.K, 0)
+		optionPrices[i] = math.Max(S[i]-h.K, 0)
 	}
-	averagePrice := average(averagePrices)
+	averagePrice := average(optionPrices)
 
 	return averagePrice, nil
 }
 
 func average(priceSlice []float64) float64 {
-	averagePrice := 0.0
+	var averagePrice float64
 	for _, price := range priceSlice {
 		averagePrice += price
 	}
@@ -90,12 +85,12 @@ func normalDistributedSlice(n int) []float64 {
 }
 
 func normalModifiedDistributedSlice(normalDistribution []float64, rho float64, n int) []float64 {
-	normDist := normalDistributedSlice(n)
-	z := make([]float64, n)
+	independentNormDist := normalDistributedSlice(n)
+	z := make([]float64, n, n)
 
 	// Generate some random numbers from standard normal distribution.
 	for i := 0; i < n; i++ {
-		z[i] = rho*normalDistribution[i] + math.Sqrt(1-math.Pow(rho, 2))*normDist[i]
+		z[i] = rho*normalDistribution[i] - math.Sqrt(1.0-math.Pow(rho, 2))*independentNormDist[i]
 	}
 
 	return z
