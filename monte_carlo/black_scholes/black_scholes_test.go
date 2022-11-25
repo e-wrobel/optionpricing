@@ -28,9 +28,9 @@ func TestAveragePrice(t *testing.T) {
 
 func TestBlackScholes(t *testing.T) {
 	tests := []struct {
-		name          string
-		obj           *BlackScholes
-		expectedPrice float64
+		name             string
+		obj              *BlackScholes
+		minExpectedPrice float64
 	}{
 		{
 			name: "test_average_price",
@@ -41,14 +41,14 @@ func TestBlackScholes(t *testing.T) {
 				R:            0.03,
 				Sigma:        0.2,
 			},
-			expectedPrice: 500,
+			minExpectedPrice: 500,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			out, err := test.obj.SimulateOptionPrice(10000, 1000)
-			assert.Greater(t, test.expectedPrice, out)
+			assert.Greater(t, test.minExpectedPrice, out)
 			assert.NoError(t, err)
 		})
 	}

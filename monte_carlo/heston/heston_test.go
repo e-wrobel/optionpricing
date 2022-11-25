@@ -7,9 +7,9 @@ import (
 
 func TestHeston(t *testing.T) {
 	tests := []struct {
-		name          string
-		obj           *Heston
-		expectedPrice float64
+		name             string
+		obj              *Heston
+		minExpectedPrice float64
 	}{
 		{
 			name: "test_average_price",
@@ -24,14 +24,14 @@ func TestHeston(t *testing.T) {
 				Theta:           11.0,
 				Epsilon:         0.1,
 			},
-			expectedPrice: 500,
+			minExpectedPrice: 500,
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			out, err := test.obj.SimulateOptionPrice(10000, 1000)
-			assert.Greater(t, test.expectedPrice, out)
+			assert.Greater(t, test.minExpectedPrice, out)
 			assert.NoError(t, err)
 		})
 	}
