@@ -7,15 +7,19 @@ import (
 )
 
 type Heston struct {
-	InitialPrice    float64
-	T               float64
-	K               float64
-	R               float64
-	InitialVariance float64
-	Rho             float64
-	Kappa           float64
-	Theta           float64
-	Epsilon         float64
+	InitialPrice float64
+	T            float64
+	K            float64
+	R            float64
+	Parameters
+}
+
+type Parameters struct {
+	V0      float64
+	Rho     float64
+	Kappa   float64
+	Theta   float64
+	Epsilon float64
 }
 
 func (h *Heston) SimulateOptionPrice(numberOfPaths, numberOfTimeSteps int) (float64, error) {
@@ -34,7 +38,7 @@ func (h *Heston) SimulateOptionPrice(numberOfPaths, numberOfTimeSteps int) (floa
 
 	// Init variance vector with initial variance.
 	for i := 0; i < numberOfPaths; i++ {
-		V[i] = h.InitialVariance
+		V[i] = h.V0
 	}
 
 	for t := 1; t < numberOfTimeSteps; t++ {
@@ -60,6 +64,57 @@ func (h *Heston) SimulateOptionPrice(numberOfPaths, numberOfTimeSteps int) (floa
 	averagePrice := average(optionPrices)
 
 	return averagePrice, nil
+}
+
+func (h *Heston) FindHestonParameters(leftParameters, rightParameters Parameters, steps float64, expectedPrice int, percentToleranceLevel float64) (Parameters, float64, bool, error) {
+	paramsChan := make(chan Parameters)
+	priceChan := make(chan float64)
+	errChan := make(chan bool)
+
+	for v0 := leftParameters.V0; v0 < rightParameters.V0; v0 += v0 / steps {
+		for rho := leftParameters.Rho; rho < rightParameters.Rho; rho += rho / steps {
+			for kappa := leftParameters.Kappa; kappa < rightParameters.Kappa; kappa += kappa / steps {
+				for theta := leftParameters.Theta; theta < rightParameters.Theta; theta += theta / steps {
+					for epsilon := leftParameters.Epsilon; epsilon < rightParameters.Epsilon; epsilon += epsilon / steps {
+						go func(v0, rho, kappa, theta, epsilon float64) {
+							h.V0 = v0
+							h.Rho = rho
+							h.Kappa = kappa
+							h.Theta = theta
+							h.Epsilon = epsilon
+							price, err := h.SimulateOptionPrice(10000, 1000)
+							if err != nil {
+								paramsChan <- Parameters{}
+								priceChan <- 0
+								errChan <- true
+							}
+							level := 100 * math.Abs(price-float64(expectedPrice)) / float64(expectedPrice)
+							if level <= percentToleranceLevel {
+								parameters := Parameters{
+									V0:      v0,
+									Rho:     rho,
+									Kappa:   kappa,
+									Theta:   theta,
+									Epsilon: epsilon,
+								}
+								paramsChan <- parameters
+								priceChan <- price
+								errChan <- false
+							}
+						}(v0, rho, kappa, theta, epsilon)
+					}
+				}
+			}
+		}
+	}
+
+	parameters := <-paramsChan
+	price := <-priceChan
+	err := <-errChan
+	if err {
+		return parameters, price, true, fmt.Errorf("unable to calculate option price")
+	}
+	return parameters, price, true, nil
 }
 
 func average(priceSlice []float64) float64 {
