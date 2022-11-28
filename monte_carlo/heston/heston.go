@@ -66,55 +66,49 @@ func (h *Heston) SimulateOptionPrice(numberOfPaths, numberOfTimeSteps int) (floa
 	return averagePrice, nil
 }
 
-func (h *Heston) FindHestonParameters(leftParameters, rightParameters Parameters, steps float64, expectedPrice int, percentToleranceLevel float64) (Parameters, float64, bool, error) {
-	paramsChan := make(chan Parameters)
-	priceChan := make(chan float64)
-	errChan := make(chan bool)
+func (h *Heston) FindHestonParameters(leftParameters, rightParameters Parameters, steps, rho, v0, epsilon float64, expectedPrice int, percentToleranceLevel float64, multiThreaded bool) (Parameters, float64, bool, error) {
+	for kappa := leftParameters.Kappa; kappa < rightParameters.Kappa; kappa += kappa / steps {
+		for theta := leftParameters.Theta; theta < rightParameters.Theta; theta += theta / steps {
+			{
+				h.V0 = v0
+				h.Rho = rho
+				h.Kappa = kappa
+				h.Theta = theta
+				h.Epsilon = epsilon
+				price, err := h.SimulateOptionPrice(10000, 1000)
+				if err != nil {
+					return Parameters{}, 0, false, fmt.Errorf("unable to computer: %v", err)
+				}
 
-	for v0 := leftParameters.V0; v0 < rightParameters.V0; v0 += v0 / steps {
-		for rho := leftParameters.Rho; rho < rightParameters.Rho; rho += rho / steps {
-			for kappa := leftParameters.Kappa; kappa < rightParameters.Kappa; kappa += kappa / steps {
-				for theta := leftParameters.Theta; theta < rightParameters.Theta; theta += theta / steps {
-					for epsilon := leftParameters.Epsilon; epsilon < rightParameters.Epsilon; epsilon += epsilon / steps {
-						go func(v0, rho, kappa, theta, epsilon float64) {
-							h.V0 = v0
-							h.Rho = rho
-							h.Kappa = kappa
-							h.Theta = theta
-							h.Epsilon = epsilon
-							price, err := h.SimulateOptionPrice(10000, 1000)
-							if err != nil {
-								paramsChan <- Parameters{}
-								priceChan <- 0
-								errChan <- true
-							}
-							level := 100 * math.Abs(price-float64(expectedPrice)) / float64(expectedPrice)
-							if level <= percentToleranceLevel {
-								parameters := Parameters{
-									V0:      v0,
-									Rho:     rho,
-									Kappa:   kappa,
-									Theta:   theta,
-									Epsilon: epsilon,
-								}
-								paramsChan <- parameters
-								priceChan <- price
-								errChan <- false
-							}
-						}(v0, rho, kappa, theta, epsilon)
+				if expectedPrice == 0 {
+					if int(price) == 0 {
+						parameters := Parameters{
+							V0:      v0,
+							Rho:     rho,
+							Kappa:   kappa,
+							Theta:   theta,
+							Epsilon: epsilon,
+						}
+						return parameters, price, true, nil
 					}
 				}
+				level := 100 * math.Abs(price-float64(expectedPrice)) / float64(expectedPrice)
+				if level <= percentToleranceLevel {
+					parameters := Parameters{
+						V0:      v0,
+						Rho:     rho,
+						Kappa:   kappa,
+						Theta:   theta,
+						Epsilon: epsilon,
+					}
+					return parameters, price, true, nil
+				}
 			}
+
 		}
 	}
 
-	parameters := <-paramsChan
-	price := <-priceChan
-	err := <-errChan
-	if err {
-		return parameters, price, true, fmt.Errorf("unable to calculate option price")
-	}
-	return parameters, price, true, nil
+	return Parameters{}, 0, false, fmt.Errorf("unable to find price for given parameters")
 }
 
 func average(priceSlice []float64) float64 {
