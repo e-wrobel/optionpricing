@@ -63,6 +63,15 @@ func (h *Heston) SimulateOptionPrice(numberOfPaths, numberOfTimeSteps int) (floa
 	}
 	averagePrice := average(optionPrices)
 
+	sigmas := make([]float64, 0)
+
+	for _, v := range V {
+		sigmas = append(sigmas, math.Sqrt(v))
+	}
+
+	averageSigma := average(sigmas)
+	fmt.Printf("Average sigma: %v", averageSigma)
+
 	return averagePrice, nil
 }
 

@@ -6,41 +6,60 @@ import (
 	"optionpricing/monte_carlo/black_scholes"
 	"optionpricing/monte_carlo/heston"
 	"os"
-	"time"
 )
 
 func main() {
 	// OW20A211150
-	now := time.Now()
-	blackScholesExample()
-	diff := time.Now().Sub(now)
-	fmt.Printf("Black-Scholes calculation time minutes: %v, seconds: %v\n", diff.Minutes(), diff.Seconds())
+	// now := time.Now()
+	// blackScholesExample()
+	// diff := time.Now().Sub(now)
+	// fmt.Printf("Black-Scholes calculation time minutes: %v, seconds: %v\n", diff.Minutes(), diff.Seconds())
 
-	now = time.Now()
-	hestonExample()
-	diff = time.Now().Sub(now)
-	fmt.Printf("Heston calculation time minutes: %v, seconds: %v\n", diff.Minutes(), diff.Seconds())
+	// now := time.Now()
+	// hestonExample()
+	// diff := time.Now().Sub(now)
+	// fmt.Printf("Heston calculation time minutes: %v, seconds: %v\n", diff.Minutes(), diff.Seconds())
+
+	h := heston.Heston{
+		InitialPrice: 1650.0,
+		T:            float64(70) / float64(252),
+		K:            1200.0,
+		R:            0.03,
+		Parameters: heston.Parameters{
+			V0:      math.Pow(0.045, 2),
+			Rho:     -0.7,
+			Kappa:   1.906721378588332,
+			Theta:   14.791111111111112,
+			Epsilon: 0.2,
+		},
+	}
+	price, err := h.SimulateOptionPrice(10000, 1000)
+	if err != nil {
+		fmt.Printf("err: %v", err)
+		os.Exit(1)
+	}
+	fmt.Printf("Price: %v", price)
 }
 
 func hestonExample() {
 	h := heston.Heston{
-		InitialPrice: 1625.0,
-		T:            float64(43) / float64(252),
-		K:            1150.0,
+		InitialPrice: 1650.0,
+		T:            float64(70) / float64(252),
+		K:            1200.0,
 		R:            0.03,
 		Parameters:   heston.Parameters{},
 	}
 
 	// Expected price
-	expectedPrice := 848
+	expectedPrice := 824
 
 	parameters, price, found, err := h.FindHestonParameters(heston.Parameters{
 		Kappa: 1.0,
-		Theta: 1.0,
+		Theta: 13.0,
 	}, heston.Parameters{
-		Kappa: 15.0,
+		Kappa: 3.0,
 		Theta: 15.0,
-	}, 10, -0.7, math.Pow(0.065, 2), 0.2, expectedPrice, 5, false)
+	}, 15, -0.7, math.Pow(0.045, 2), 0.2, expectedPrice, 1, false)
 	if err != nil {
 		fmt.Printf("Unable to find price: Found error: %v", err)
 		os.Exit(1)
